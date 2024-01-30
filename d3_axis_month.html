@@ -16,9 +16,21 @@
   let startDate = new Date(new Date().getTime() - 10 * 24 * 60 * 60 * 1000); // 开始日期
   let endDate = new Date(startDate.getTime() + 30 * 24 * 60 * 60 * 1000); // 结束日期，40天后
 
+  // 假设SVG的尺寸已经被设置
+  const svgWidth = 900;
+  const svgHeight = 800;
+
+
+  // 创建一个包含姓名的数组
+  const names = ["Alice", "Bob", "Carol", "David", "Eve", "Frank", "Grace", "Helen", "Ivy", "Jack"];
+
+  const margin = { top: 45, right: 20, bottom: 30, left: 40 }; // 将top调整为45，稍高于x轴的位置
+  const height = svgHeight - margin.top - margin.bottom; // 根据新的margin.top计算实际的高度
+
+
   const scaleTime = d3.scaleTime()
     .domain([startDate, endDate])
-    .range([0, 960]); // 假设SVG的宽度为960px
+    .range([margin.left, svgWidth - margin.right]);
 
   let lastDisplayedYearMonth = "";
 
@@ -56,15 +68,30 @@
 
   const svg = d3.select("svg");
 
-  // 添加年月时间轴
+  // // 添加年月时间轴
+  // svg.append("g")
+  //   .attr("transform", "translate(0,20)") // 根据需要调整位置
+  //   .call(xAxisTop);
+  //
+  // // 添加日期时间轴
+  // svg.append("g")
+  //   .attr("transform", "translate(0,40)") // 根据需要进一步调整位置
+  //   .call(xAxisBottom);
+
+  // 添加年月时间轴（x轴顶部），调整其位置以确保与y轴重合
   svg.append("g")
-    .attr("transform", "translate(0,20)") // 根据需要调整位置
+    .attr("transform", `translate(0,${margin.top})`) // 确保x轴的位置正确
     .call(xAxisTop);
 
-  // 添加日期时间轴
+  // 添加日期时间轴（x轴底部），调整其位置以确保与y轴重合
   svg.append("g")
-    .attr("transform", "translate(0,40)") // 根据需要进一步调整位置
+    .attr("transform", `translate(0,${margin.top + 20})`) // 确保日期轴正下方的位置正确
     .call(xAxisBottom);
+
+  // 添加日期时间轴（x轴底部），调整其位置以确保与y轴重合
+  // svg.append("g")
+  //   .attr("transform", `translate(${margin.left},${svgHeight - margin.bottom})`) // 将x轴底部放在y轴的起始位置
+  //   .call(xAxisBottom);
 
 
   const currentDate = new Date(); // 获取当前日期
@@ -78,6 +105,53 @@
     .attr('y2', 800) // y2设置为SVG的高度，或者你希望线结束的位置
     .attr('stroke', 'red') // 设置线条颜色为红色
     .attr('stroke-width', 2); // 设置线条宽度
+
+
+
+  // // 获取当前日期并计算对应的x坐标
+  // const currentDate = new Date();
+
+  // 选择当前日期对应的坐标轴刻度文本元素
+  svg.selectAll('.tick')
+    .each(function(d) {
+      if (d3.timeFormat("%Y-%m-%d")(d) === d3.timeFormat("%Y-%m-%d")(currentDate)) {
+        // 获取文本元素的bounding box
+        const bbox = this.getBBox();
+
+        // 在文本元素下添加绿色矩形
+        const padding = 2; // 设置一些内边距
+        const rect = d3.select(this).insert("rect", "text")
+          .attr("x", bbox.x - padding)
+          .attr("y", bbox.y - padding)
+          .attr("width", bbox.width + 2 * padding)
+          .attr("height", bbox.height + 2 * padding)
+          .attr("fill", "green");
+
+        // 确保文本在矩形之上
+        d3.select(this).raise();
+      }
+    });
+
+
+
+
+  // 调整y轴比例尺的range
+  const yScale = d3.scaleLinear()
+    .domain([0, 9]) // 假设有10个刻度
+    .range([height, 0]); // 从x轴底部向上
+
+  // 创建Y轴
+  const yAxis = d3.axisLeft(yScale)
+    .tickFormat((d, i) => names[i])
+    .ticks(10);
+
+  const xAxisBottomPosition = 66; // 例如，这是日期时间轴的垂直位置
+
+  // 调整y轴的transform属性，使其最上方与x轴底部的最左侧对齐
+  svg.append("g")
+    .attr("class", "y axis")
+    .attr("transform", `translate(${margin.left},${xAxisBottomPosition})`)
+    .call(yAxis);
 
 </script>
 
