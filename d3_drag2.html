@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>矩形的拖动与宽度调整</title>
+  <script src="https://d3js.org/d3.v6.min.js"></script>
+</head>
+<body>
+<svg width="800" height="600" style="border: 1px solid black;"></svg>
+
+<script>
+  var svg = d3.select("svg");
+  var initialX = 100, initialY = 100;
+  var rectWidth = 100, rectHeight = 100;
+
+  // 创建矩形
+  var rect = svg.append("rect")
+    .attr("x", initialX)
+    .attr("y", initialY)
+    .attr("width", rectWidth)
+    .attr("height", rectHeight)
+    .style("fill", "steelblue");
+
+  // 创建左右锚点感应区域
+  var leftAnchorArea = svg.append("rect")
+    .attr("x", initialX - 3)
+    .attr("y", initialY)
+    .attr("width", 6)
+    .attr("height", rectHeight)
+    .style("fill", "black")
+    .style("cursor", "ew-resize");
+
+  var rightAnchorArea = svg.append("rect")
+    .attr("x", initialX + rectWidth - 3)
+    .attr("y", initialY)
+    .attr("width", 6)
+    .attr("height", rectHeight)
+    .style("fill", "black")
+    .style("cursor", "ew-resize");
+
+  // 更新锚点位置
+  function updateAnchorPositions() {
+    leftAnchorArea.attr("x", parseFloat(rect.attr("x")) - 3)
+      .attr("y", parseFloat(rect.attr("y")));
+    rightAnchorArea.attr("x", parseFloat(rect.attr("x")) + parseFloat(rect.attr("width")) - 3)
+      .attr("y", parseFloat(rect.attr("y")));
+  }
+
+  // 拖拽右侧锚点调整宽度
+  var dragRightAnchor = d3.drag()
+    .on("drag", function(event) {
+      var newWidth = Math.max(10, event.x - parseFloat(rect.attr("x")));
+      rect.attr("width", newWidth);
+      updateAnchorPositions();
+    });
+
+  // 拖拽左侧锚点调整宽度和位置
+  var dragLeftAnchor = d3.drag()
+    .on("drag", function(event) {
+      var rectX = parseFloat(rect.attr("x"));
+      var rectRightX = rectX + parseFloat(rect.attr("width"));
+      var newWidth = Math.max(10, rectRightX - event.x);
+      rect.attr("x", rectRightX - newWidth)
+        .attr("width", newWidth);
+      updateAnchorPositions();
+    });
+
+  // 拖拽矩形移动位置
+  var dragRect = d3.drag()
+    .on("drag", function(event) {
+      var dx = event.dx;
+      var dy = event.dy;
+      var newX = parseFloat(rect.attr("x")) + dx;
+      var newY = parseFloat(rect.attr("y")) + dy;
+      rect.attr("x", newX).attr("y", newY);
+      updateAnchorPositions();
+    });
+
+  rect.call(dragRect);
+  leftAnchorArea.call(dragLeftAnchor);
+  rightAnchorArea.call(dragRightAnchor);
+
+
+</script>
+</body>
+</html>

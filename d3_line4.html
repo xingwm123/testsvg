@@ -1,0 +1,130 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>D3 Drag and Draw Curve Example</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+<!--<svg role="graphics-symbol" viewBox="0 0 16 16" class="clearInput" style="width: 14px; height: 14px; display: block; fill: rgb(212, 76, 71); flex-shrink: 0; background: white; border-radius: 5px;"><path d="M7.993 15.528a7.273 7.273 0 01-2.923-.593A7.633 7.633 0 012.653 13.3a7.797 7.797 0 01-1.633-2.417 7.273 7.273 0 01-.593-2.922c0-1.035.198-2.01.593-2.922A7.758 7.758 0 015.063.99 7.273 7.273 0 017.985.395a7.29 7.29 0 012.93.593 7.733 7.733 0 012.417 1.64 7.647 7.647 0 011.64 2.41c.396.914.594 1.888.594 2.923 0 1.035-.198 2.01-.593 2.922a7.735 7.735 0 01-4.058 4.05 7.272 7.272 0 01-2.922.594zM5.59 11.06c.2 0 .371-.066.513-.198L8 8.951l1.904 1.911a.675.675 0 00.498.198.667.667 0 00.491-.198.67.67 0 00.205-.49.64.64 0 00-.205-.491L8.981 7.969l1.92-1.911a.686.686 0 00.204-.491.646.646 0 00-.205-.484.646.646 0 00-.483-.205.67.67 0 00-.49.205L8 6.995 6.081 5.083a.696.696 0 00-.49-.19.682.682 0 00-.491.198.651.651 0 00-.198.49c0 .181.068.342.205.484l1.912 1.904-1.912 1.92a.646.646 0 00-.205.483c0 .19.066.354.198.49.136.132.3.198.49.198z"></path></svg>-->
+
+<svg width="800" height="600">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="0" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="blue"></path>
+    </marker>
+  </defs>
+</svg>
+
+<script>
+  // 设置基础参数
+  const svg = d3.select('svg');
+  // 假设我们已经定义了箭头标记，并且知道箭头的大致尺寸
+  const arrowLength = 10; // 箭头长度的估计值，根据实际标记大小调整
+
+  // 绘制第一个矩形
+  const rect1 = svg.append('rect')
+    .attr('x', 400).attr('y', 100)
+    .attr('width', 200).attr('height', 100)
+    .style('fill', 'green')
+    .style('stroke', 'black');
+
+  // 绘制第二个矩形
+  const rect2 = svg.append('rect')
+    .attr('x', 100).attr('y', 200)
+    .attr('width', 200).attr('height', 100)
+    .style('fill', 'green')
+    .style('stroke', 'black');
+
+  // 绘制圆形
+  const circle = svg.append('circle')
+    .attr('cx', 300).attr('cy', 150)
+    .attr('r', 10)
+    .style('fill', 'red');
+
+  // 绘制初始曲线
+  let path = svg.append('path')
+    .style('fill', 'none')
+    .style('stroke', 'blue')
+    .attr('d', '');
+
+  // 添加拖拽交互
+  circle.call(d3.drag()
+    .on('start', dragStarted) // 定义开始拖拽的行为
+    .on('drag', dragged)
+    .on('end', dragEnded));
+
+  function dragStarted(event) {
+    d3.select(this).raise(); // 确保被拖拽的元素在顶层
+  }
+
+  function dragged(event) {
+    const mouse = d3.pointer(event, svg.node()); // 获取相对于SVG的鼠标位置
+    const x = mouse[0],
+      y = mouse[1];
+    const rect2X = parseInt(rect2.attr('x')),
+      rect2Y = parseInt(rect2.attr('y')),
+      rect2Height = parseInt(rect2.attr('height'));
+
+    // 计算第二个矩形左侧中点的Y坐标
+    const rect2MidY = rect2Y + rect2Height / 2;
+
+    // 检测鼠标是否位于第二个矩形上方
+    if (x >= rect2X && x <= rect2X + rect2.attr('width') && y >= rect2Y && y <= rect2Y + rect2Height) {
+      // 鼠标位于第二个矩形上方时，曲线终点固定在矩形的左侧中点
+      drawCurve(rect2X, rect2MidY, true);
+    } else {
+      // 鼠标不在第二个矩形上方，曲线终点跟随鼠标移动
+      drawCurve(x, y, false);
+    }
+  }
+
+  function drawCurve(x, y, fixed) {
+    const startX = parseInt(circle.attr('cx')),
+      startY = parseInt(circle.attr('cy'));
+    let endX = x,
+      endY = y;
+
+    if (fixed) {
+      // 如果终点固定，则计算第二个矩形左侧中点的坐标，并考虑箭头长度的调整
+      const rect2X = parseInt(rect2.attr('x')),
+        rect2Y = parseInt(rect2.attr('y')),
+        rect2Height = parseInt(rect2.attr('height'));
+      endX = rect2X - arrowLength; // 考虑箭头长度的调整
+      endY = rect2Y + rect2Height / 2;
+    }
+
+    // 新参数，控制起点和终点的水平段长度
+    let startHorizontalLength = 100; // 起点的水平长度
+    let endHorizontalLength = 100; // 终点的水平长度
+
+    // 构建路径数据字符串，包括起始和终止的水平长度调整
+    const pathData = `M ${startX},${startY}
+                      C ${startX + startHorizontalLength},${startY} ${endX - endHorizontalLength},${endY} ${endX},${endY}`;
+
+    path.attr('d', pathData)
+      .attr('marker-end', 'url(#arrow)');
+  }
+  //
+  function dragEnded(event) {
+    const mouse = d3.pointer(event, svg.node()); // 获取鼠标位置，相对于SVG容器
+    const x = mouse[0],
+      y = mouse[1];
+    const rect2X = parseInt(rect2.attr('x')),
+      rect2Y = parseInt(rect2.attr('y')),
+      rect2Width = parseInt(rect2.attr('width')),
+      rect2Height = parseInt(rect2.attr('height'));
+
+    // 判断鼠标释放时是否在第二个矩形上方
+    if (x < rect2X || x > rect2X + rect2Width || y < rect2Y || y > rect2Y + rect2Height) {
+      path.attr('d', ''); // 不在第二个矩形上方，删除曲线
+    }
+    // 如果鼠标在第二个矩形上方，曲线保持不变
+  }
+
+
+
+
+</script>
+</body>
+</html>

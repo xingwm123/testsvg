@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>矩形的拖动与宽度调整</title>
+  <script src="https://d3js.org/d3.v6.min.js"></script>
+</head>
+<body>
+<!--<svg width="800" height="600" style="border: 1px solid black;"></svg>-->
+
+<script>
+  // 设置 SVG 容器
+  var svg = d3.select("body").append("svg")
+    .attr("width", 600)
+    .attr("height", 400);
+
+  // 第一个矩形的位置和大小
+  svg.append("rect")
+    .attr("x", 100)
+    .attr("y", 100)
+    .attr("width", 100)
+    .attr("height", 50)
+    .style("fill", "red");
+
+  // 第二个矩形的位置和大小
+  svg.append("rect")
+    .attr("x", 300)
+    .attr("y", 200)
+    .attr("width", 100)
+    .attr("height", 50)
+    .style("fill", "blue");
+
+  // 曲线起点和终点
+  var startPoint = { x: 200, y: 125 }; // 第一个矩形的右侧中点
+  var endPoint = { x: 300, y: 225 }; // 第二个矩形的左侧中点
+
+  // 控制点的初始位置
+  var controlPoint = { x: 250, y: 50 };
+
+  // 计算起点和终点的中间位置
+  var midPoint = {
+    x: (startPoint.x + endPoint.x) / 2,
+    y: (startPoint.y + endPoint.y) / 2
+  };
+
+  // 将控制点设置在起点和终点的中间位置，同时稍微上移或下移以产生曲线
+  // 例如，这里我们将控制点沿y轴上移，以便它不直接位于两点连线上
+  var controlPoint = {
+    x: midPoint.x,
+    y: midPoint.y - 50 // 根据需要调整这个值以控制曲线的弯曲程度
+  };
+
+  // 使用更新后的控制点位置绘制贝塞尔曲线
+  var path = svg.append("path")
+    .style("fill", "none")
+    .style("stroke", "black")
+    .attr("d", `M${startPoint.x},${startPoint.y} Q${controlPoint.x},${controlPoint.y} ${endPoint.x},${endPoint.y}`);
+
+  function saveControlPointPosition() {
+    // 将控制点位置转换为字符串
+    const controlPointPosition = JSON.stringify({ x: controlPoint.x, y: controlPoint.y });
+    // 保存到localStorage
+    localStorage.setItem('controlPointPosition', controlPointPosition);
+  }
+
+  // 在控制点位置绘制一个小圆形表示控制点
+  var controlCircle = svg.append("circle")
+    .attr("cx", controlPoint.x)
+    .attr("cy", controlPoint.y)
+    .attr("r", 5)
+    .style("fill", "green")
+    .call(d3.drag()
+      .on("drag", function(event) {
+        // 更新控制点位置
+        controlPoint.x = event.x;
+        controlPoint.y = event.y;
+        // 更新圆形位置
+        d3.select(this)
+          .attr("cx", controlPoint.x)
+          .attr("cy", controlPoint.y);
+        // 更新贝塞尔曲线
+        path.attr("d", `M${startPoint.x},${startPoint.y} Q${controlPoint.x},${controlPoint.y} ${endPoint.x},${endPoint.y}`);
+      })
+    .on("end", saveControlPointPosition));
+
+
+  function loadControlPointPosition() {
+    // 从localStorage获取控制点位置
+    const savedPosition = localStorage.getItem('controlPointPosition');
+    if (savedPosition) {
+      // 将字符串转换回对象
+      const position = JSON.parse(savedPosition);
+      // 更新控制点位置
+      controlPoint.x = position.x;
+      controlPoint.y = position.y;
+      // 更新曲线和控制点圆形的位置
+      path.attr("d", `M${startPoint.x},${startPoint.y} Q${controlPoint.x},${controlPoint.y} ${endPoint.x},${endPoint.y}`);
+      controlCircle.attr("cx", controlPoint.x).attr("cy", controlPoint.y);
+    }
+  }
+
+  // 在页面加载时调用loadControlPointPosition函数
+  loadControlPointPosition();
+
+</script>
+</body>
+</html>

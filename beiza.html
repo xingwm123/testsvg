@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Bezier Curve with D3.js and Bezier.js</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="https://raw.githubusercontent.com/Pomax/bezierjs/master/dist/bezier.js"></script>
+</head>
+<body>
+<script>
+  // 设置 SVG 容器
+  var svg = d3.select("body").append("svg")
+    .attr("width", 600)
+    .attr("height", 400);
+
+  // 定义起点、控制点和终点
+  var startPoint = {x: 100, y: 250};
+  var controlPoint = {x: 250, y: 100};
+  var endPoint = {x: 400, y: 250};
+
+  // 使用 Bezier.js 创建二次贝塞尔曲线
+  var curve = new Bezier(startPoint.x, startPoint.y, controlPoint.x, controlPoint.y, endPoint.x, endPoint.y);
+
+  // 生成曲线路径
+  var pathData = curve.toSVG();
+
+  // 绘制贝塞尔曲线
+  svg.append("path")
+    .attr("d", pathData)
+    .style("fill", "none")
+    .style("stroke", "black");
+
+  // 绘制起点到控制点的虚线
+  svg.append("line")
+    .attr("x1", startPoint.x)
+    .attr("y1", startPoint.y)
+    .attr("x2", controlPoint.x)
+    .attr("y2", controlPoint.y)
+    .style("stroke-dasharray", ("3, 3"))
+    .style("stroke", "grey");
+
+  // 绘制控制点到终点的虚线
+  svg.append("line")
+    .attr("x1", controlPoint.x)
+    .attr("y1", controlPoint.y)
+    .attr("x2", endPoint.x)
+    .attr("y2", endPoint.y)
+    .style("stroke-dasharray", ("3, 3"))
+    .style("stroke", "grey");
+
+  // 绘制控制点
+  svg.append("circle")
+    .attr("cx", controlPoint.x)
+    .attr("cy", controlPoint.y)
+    .attr("r", 5)
+    .style("fill", "red");
+
+  // 绘制起点和终点
+  svg.selectAll(".points")
+    .data([startPoint, endPoint])
+    .enter().append("circle")
+    .attr("cx", function(d) { return d.x; })
+    .attr("cy", function(d) { return d.y; })
+    .attr("r", 5)
+    .style("fill", "blue");
+</script>
+</body>
+</html>

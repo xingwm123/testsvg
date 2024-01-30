@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>可拖动的矩形</title>
+  <script src="https://d3js.org/d3.v6.min.js"></script>
+</head>
+<body>
+<svg width="800" height="600" style="outline: 5px solid #e6e6e6" ></svg>
+<script>
+  // 选择 SVG 容器
+  var svg = d3.select("svg");
+
+  // 创建一个矩形
+  var rect = svg.append("rect")
+    .attr("x", 100) // 初始 x 坐标
+    .attr("y", 100) // 初始 y 坐标
+    .attr("width", 100) // 宽度
+    .attr("height", 100) // 高度
+    .style("fill", "steelblue"); // 填充颜色
+
+  // 定义拖拽行为
+  var drag = d3.drag()
+    .on("start", dragstarted) // 拖拽开始
+    .on("drag", dragged) // 拖拽进行中
+    .on("end", dragended); // 拖拽结束
+
+  // 应用拖拽行为到矩形
+  rect.call(drag);
+
+  // 拖拽开始时的处理函数
+  function dragstarted(event) {
+    d3.select(this).raise().style("border", "solid black");
+  }
+
+  // 拖拽进行中的处理函数
+  function dragged(event, d) {
+    d3.select(this)
+      .attr("x", event.x)
+      .attr("y", event.y);
+  }
+
+  // 拖拽结束时的处理函数
+  function dragended(event) {
+    d3.select(this).style("border", "");
+  }
+</script>
+</body>
+</html>

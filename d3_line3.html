@@ -1,0 +1,200 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>D3 Drag and Draw Curve Example</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+<!--<svg role="graphics-symbol" viewBox="0 0 16 16" class="clearInput" style="width: 14px; height: 14px; display: block; fill: rgb(212, 76, 71); flex-shrink: 0; background: white; border-radius: 5px;"><path d="M7.993 15.528a7.273 7.273 0 01-2.923-.593A7.633 7.633 0 012.653 13.3a7.797 7.797 0 01-1.633-2.417 7.273 7.273 0 01-.593-2.922c0-1.035.198-2.01.593-2.922A7.758 7.758 0 015.063.99 7.273 7.273 0 017.985.395a7.29 7.29 0 012.93.593 7.733 7.733 0 012.417 1.64 7.647 7.647 0 011.64 2.41c.396.914.594 1.888.594 2.923 0 1.035-.198 2.01-.593 2.922a7.735 7.735 0 01-4.058 4.05 7.272 7.272 0 01-2.922.594zM5.59 11.06c.2 0 .371-.066.513-.198L8 8.951l1.904 1.911a.675.675 0 00.498.198.667.667 0 00.491-.198.67.67 0 00.205-.49.64.64 0 00-.205-.491L8.981 7.969l1.92-1.911a.686.686 0 00.204-.491.646.646 0 00-.205-.484.646.646 0 00-.483-.205.67.67 0 00-.49.205L8 6.995 6.081 5.083a.696.696 0 00-.49-.19.682.682 0 00-.491.198.651.651 0 00-.198.49c0 .181.068.342.205.484l1.912 1.904-1.912 1.92a.646.646 0 00-.205.483c0 .19.066.354.198.49.136.132.3.198.49.198z"></path></svg>-->
+
+<svg width="800" height="600">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="0" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="blue"></path>
+    </marker>
+  </defs>
+</svg>
+
+<script>
+  // 设置基础参数
+  const svg = d3.select('svg');
+  // 假设我们已经定义了箭头标记，并且知道箭头的大致尺寸
+  const arrowLength = 10; // 箭头长度的估计值，根据实际标记大小调整
+
+  // 绘制第一个矩形
+  const rect1 = svg.append('rect')
+    .attr('x', 100).attr('y', 100)
+    .attr('width', 200).attr('height', 100)
+    .style('fill', 'green')
+    .style('stroke', 'black');
+
+  // 绘制第二个矩形
+  const rect2 = svg.append('rect')
+    .attr('x', 400).attr('y', 200)
+    .attr('width', 200).attr('height', 100)
+    .style('fill', 'green')
+    .style('stroke', 'black');
+
+  // 绘制圆形
+  const circle = svg.append('circle')
+    .attr('cx', 300).attr('cy', 150)
+    .attr('r', 10)
+    .style('fill', 'red');
+
+  // 绘制初始曲线
+  let path = svg.append('path')
+    .style('fill', 'none')
+    .style('stroke', 'blue')
+    .attr('d', '');
+
+  // 添加拖拽交互
+  circle.call(d3.drag()
+    .on('start', dragStarted) // 定义开始拖拽的行为
+    .on('drag', dragged)
+    .on('end', dragEnded));
+
+  function dragStarted(event) {
+    d3.select(this).raise(); // 确保被拖拽的元素在顶层
+  }
+
+  function dragged(event) {
+    const mouse = d3.pointer(event, svg.node()); // 获取相对于SVG的鼠标位置
+    const x = mouse[0],
+      y = mouse[1];
+    const rect2X = parseInt(rect2.attr('x')),
+      rect2Y = parseInt(rect2.attr('y')),
+      rect2Height = parseInt(rect2.attr('height'));
+
+    // 计算第二个矩形左侧中点的Y坐标
+    const rect2MidY = rect2Y + rect2Height / 2;
+
+    // 检测鼠标是否位于第二个矩形上方
+    if (x >= rect2X && x <= rect2X + rect2.attr('width') && y >= rect2Y && y <= rect2Y + rect2Height) {
+      // 鼠标位于第二个矩形上方时，曲线终点固定在矩形的左侧中点
+      drawCurve(rect2X, rect2MidY, true);
+    } else {
+      // 鼠标不在第二个矩形上方，曲线终点跟随鼠标移动
+      drawCurve(x, y, false);
+    }
+  }
+
+  function drawCurve(x, y, fixed) {
+    const startX = parseInt(circle.attr('cx')),
+      startY = parseInt(circle.attr('cy'));
+    let endX = x,
+      endY = y;
+
+    if (fixed) {
+      // 计算第二个矩形左侧中点的坐标，并向外调整以考虑箭头长度
+      const rect2X = parseInt(rect2.attr('x')),
+        rect2Y = parseInt(rect2.attr('y')),
+        rect2Height = parseInt(rect2.attr('height'));
+      endX = rect2X - arrowLength; // 考虑箭头长度的调整
+      endY = rect2Y + rect2Height / 2;
+    }
+
+   /*
+   在这个路径数据字符串中，M命令移动到起点，C命令代表立方贝塞尔曲线，它有两个控制点和一个终点。第一个控制点（startX + curvature, startY）被放置在起点的右侧，用来创造曲线开始时的弯曲。第二个控制点（endX - horizontalLength, endY）位于终点的左侧，这个位置保证了曲线在接近终点时变得水平。
+
+curvature和horizontalLength是您需要根据曲线的实际表现进行调整的参数，curvature决定了曲线开始时弯曲的程度，horizontalLength决定了终点前多长距离开始变为水平。
+
+您需要调整这些值，直到曲线符合您的期望。通常需要一些实验和调整，因为理想的值取决于起点和终点的具体位置以及您希望曲线有多弯。
+
+    */
+
+    let horizontalLength = 50
+    let curvature = 0
+    // 构建路径数据字符串
+    const pathData = `M ${startX},${startY}
+                  C ${startX + curvature},${startY} ${endX - horizontalLength},${endY} ${endX},${endY}`;
+
+    path.attr('d', pathData)
+      .attr('marker-end', 'url(#arrow)');
+  }
+  //
+  function dragEnded(event) {
+    const mouse = d3.pointer(event, svg.node()); // 获取鼠标位置，相对于SVG容器
+    const x = mouse[0],
+      y = mouse[1];
+    const rect2X = parseInt(rect2.attr('x')),
+      rect2Y = parseInt(rect2.attr('y')),
+      rect2Width = parseInt(rect2.attr('width')),
+      rect2Height = parseInt(rect2.attr('height'));
+
+    // 判断鼠标释放时是否在第二个矩形上方
+    if (x < rect2X || x > rect2X + rect2Width || y < rect2Y || y > rect2Y + rect2Height) {
+      path.attr('d', ''); // 不在第二个矩形上方，删除曲线
+    }
+    // 如果鼠标在第二个矩形上方，曲线保持不变
+  }
+  //
+  //
+  //
+  function addDragToRect(rect, circle, otherRect, isRect1) {
+    rect.call(d3.drag()
+      .on('start', function(event) { dragStarted2.call(this, event, circle, isRect1); })
+      .on('drag', function(event) { dragged2.call(this, event, circle, otherRect, isRect1); })
+      .on('end', dragEnded2));
+  }
+
+  function dragStarted2(event, circle, isRect1) {
+    this.offset = { x: event.x - parseFloat(d3.select(this).attr('x')), y: event.y - parseFloat(d3.select(this).attr('y')) };
+    // this.raise(); // 确保被拖拽的元素在顶层
+  }
+  function dragEnded2(event) {
+
+  }
+
+  function dragged2(event, circle, otherRect, isRect1) {
+    const dx = event.x - this.offset.x,
+      dy = event.y - this.offset.y;
+    d3.select(this).attr('x', dx).attr('y', dy); // 更新矩形位置
+
+    // 根据是哪个矩形被拖动，相应地更新圆形的位置
+    if (isRect1) {
+      // 假设圆形初始相对于矩形1的位置是固定的
+      circle.attr('cx', dx + 100) // 这里的100是示例值，应根据实际情况调整
+        .attr('cy', dy + 50); // 这里的50是示例值，应根据实际情况调整
+    } else {
+      // 如果拖动的是矩形2，则需要调整逻辑以保持圆形的相对位置不变
+      // 这可能涉及到根据矩形2与矩形1的位置关系来更新圆形位置
+    }
+
+    // 调用函数来重新绘制曲线，传入新的坐标值
+    // drawCurveBasedOnPosition(dx, dy, isRect1, circle, otherRect);
+  }
+  function drawCurveBasedOnPosition(dx, dy, isRect1, circle, otherRect) {
+    const startX = parseFloat(circle.attr('cx')),
+      startY = parseFloat(circle.attr('cy'));
+    let endX, endY;
+
+    if (isRect1) {
+      // 如果拖动的是第一个矩形，终点是第二个矩形的中心
+      endX = parseFloat(otherRect.attr('x')) + parseFloat(otherRect.attr('width')) / 2;
+      endY = parseFloat(otherRect.attr('y')) + parseFloat(otherRect.attr('height')) / 2;
+    } else {
+      // 如果拖动的是第二个矩形，更新终点为第二个矩形的新中心
+      endX = dx + parseFloat(otherRect.attr('width')) / 2;
+      endY = dy + parseFloat(otherRect.attr('height')) / 2;
+    }
+
+    // 计算曲线路径
+    let pathData = `M${startX},${startY} Q${(startX + endX) / 2},${startY} ${endX},${endY}`;
+
+    // 更新曲线
+    path.attr('d', pathData);
+  }
+
+  function dragEnded(event) {
+    // 拖拽结束时的逻辑
+  }
+
+
+  // 初始化拖拽事件
+  addDragToRect(rect1, circle, rect2, true);
+  addDragToRect(rect2, circle, rect1, false);
+
+</script>
+</body>
+</html>

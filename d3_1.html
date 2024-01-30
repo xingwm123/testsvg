@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>三个小球D3.js v7</title>
+  <script src="../lib/d3.v7.min.js"></script>
+</head>
+<body>
+<div id="box"></div>
+<div>abc</div>
+<script>
+  console.log('已经引入',d3)
+  var svg = d3.select('#box')
+    .append('svg')
+    .attr('width','500')
+    .attr('height','500')
+    .style('border','1px solid #000')
+
+  // datas 三原色
+  const circles = [
+    {id:1,color:'red'},
+    {id:2,color:'green'},
+    {id:3,color:'blue'}
+  ]
+  // 画圆
+  svg.selectAll('circle')
+    .data(circles)
+    .enter()
+    .append('circle')
+    .attr('class','circle')
+    .attr('id',d=>`circle${d.id}`)
+    .attr("cx",d=>50*d.id)
+    .attr("cy",d=>50*d.id)
+    .attr("r",20)
+    .attr("fill",(d)=>d.color)
+
+  /**
+   * data、enter、exit
+   * data 将指定数组的数据 data 与已经选中的元素进行绑定并返
+   * 回一个新的选择集和enter 和 exit
+   * enter 返回选择集中有数据但没有对应的DOM元素
+   * exit 选择集中有DOM元素但没有对应的数据
+   * */
+
+
+
+  svg.selectAll("circle")
+    .data(circles)
+    .join("circle")
+    .attr("cx", (d) => d.id * 80)
+    .attr("cy", (d) => d.id * 70)
+    .attr("r", 16)
+    .attr("fill", (d)=>d.color);
+
+
+  // 假设有一组数据
+  var data = [1, 2, 3,4,5];
+
+  // 选择 body 下的所有 div 元素，并将数据绑定到选择集
+  var divs = d3.select('body').selectAll('div')
+    .data(data);
+
+  // 使用 enter 方法为每个数据项创建一个 div 元素
+  divs.enter().append('div')
+    .text(function(d) { return d; });  // 将数据项的值设置为文本内容
+
+  d3.select("body").append("p").text("New paragraph!")
+
+</script>
+</body>
+</html>

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Menu with Iframe</title>
+  <style>
+    body {
+      display: flex;
+      margin: 0;
+    }
+    #menu {
+      width: 10%;
+      background-color: #f4f4f4;
+      padding: 20px;
+    }
+    #content {
+      width: 90%;
+    }
+    iframe {
+      width: 100%;
+      height: 600px;
+      border: none;
+    }
+  </style>
+</head>
+<body>
+
+<div id="menu">
+  <ul>
+    <li><a href="javascript:void(0)" data-link="d3_1.html">d3_1</a></li>
+    <li><a href="javascript:void(0)" data-link="d3_drag.html">d3_drag</a></li>
+    <li><a href="javascript:void(0)" data-link="d3_drag2.html">d3_drag，矩形缩放和移动位置</a></li>
+    <li><a href="javascript:void(0)" data-link="d3_line.html">d3_line</a></li>
+    <li><a href="javascript:void(0)" data-link="d3_line4.html">d3_line4,可画连线</a></li>
+    <li><a href="javascript:void(0)" data-link="d3_line5.html">d3_line5,矩形有外接圆，可拖动</a></li>
+  </ul>
+</div>
+
+<div id="content">
+  <iframe src="d3_1.html" id="iframeContent"></iframe>
+</div>
+
+<script>
+  // 获取所有菜单项
+  const menuItems = document.querySelectorAll('#menu a');
+
+  // 为每个菜单项添加点击事件
+  menuItems.forEach(item => {
+    item.addEventListener('click', function() {
+      const link = this.getAttribute('data-link');
+      document.getElementById('iframeContent').src = link; // 更新 iframe 的 src 属性
+    });
+  });
+</script>
+
+</body>
+</html>
