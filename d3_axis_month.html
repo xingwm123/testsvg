@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>D3.js Dragging Rectangles and Circles</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    svg {
+      border: 1px solid #ccc;
+    }
+  </style>
+</head>
+<body>
+<svg width="960" height="800"></svg>
+<script>
+  let startDate = new Date(new Date().getTime() - 10 * 24 * 60 * 60 * 1000); // 开始日期
+  let endDate = new Date(startDate.getTime() + 30 * 24 * 60 * 60 * 1000); // 结束日期，40天后
+
+  const scaleTime = d3.scaleTime()
+    .domain([startDate, endDate])
+    .range([0, 960]); // 假设SVG的宽度为960px
+
+  let lastDisplayedYearMonth = "";
+
+
+  const xAxisTop = d3.axisTop(scaleTime)
+    .ticks(d3.timeDay, 1)
+    .tickSize(0) // 不显示刻度线
+    .tickFormat(d => {
+      // 检查是否为每月的最后三天
+      const nextDay = d3.timeDay.offset(d, 1); // 获取明天的日期
+      const lastDayOfMonth = new Date(nextDay.getFullYear(), nextDay.getMonth(), 0); // 获取本月最后一天的日期
+      const dayDifference = d3.timeDay.count(d, lastDayOfMonth); // 计算当前日期和本月最后一天的差异
+
+      // 如果当前日期是月份的最后三天，不显示年月
+      if (dayDifference >= 0 && dayDifference < 3) {
+        return "";
+      }
+
+      const yearMonth = d3.timeFormat("%Y年%m月")(d);
+
+      // 如果是新的年月，且不是月末的最后三天，则显示年月
+      if (lastDisplayedYearMonth !== yearMonth) {
+        lastDisplayedYearMonth = yearMonth;
+        return yearMonth;
+      }
+
+      // 否则，不显示任何内容
+      return "";
+    });
+
+  const xAxisBottom = d3.axisTop(scaleTime)
+    .ticks(d3.timeDay, 1)
+    .tickSize(2) // 设置为正值以显示刻度线
+    .tickFormat(d3.timeFormat("%d")); // 显示日期
+
+  const svg = d3.select("svg");
+
+  // 添加年月时间轴
+  svg.append("g")
+    .attr("transform", "translate(0,20)") // 根据需要调整位置
+    .call(xAxisTop);
+
+  // 添加日期时间轴
+  svg.append("g")
+    .attr("transform", "translate(0,40)") // 根据需要进一步调整位置
+    .call(xAxisBottom);
+
+
+  const currentDate = new Date(); // 获取当前日期
+  const currentXPosition = scaleTime(currentDate); // 使用时间尺度计算当前日期对应的x坐标
+
+  // 在SVG中添加红线
+  svg.append('line') // 添加一个新的line元素
+    .attr('x1', currentXPosition) // x1和x2设置为计算出的x坐标，这将创建一个垂直线
+    .attr('x2', currentXPosition)
+    .attr('y1', 40) // y1设置为0（或者SVG顶部边缘的位置）
+    .attr('y2', 800) // y2设置为SVG的高度，或者你希望线结束的位置
+    .attr('stroke', 'red') // 设置线条颜色为红色
+    .attr('stroke-width', 2); // 设置线条宽度
+
+</script>
+
+</body>
+</html>
