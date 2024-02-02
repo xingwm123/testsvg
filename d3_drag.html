@@ -29,11 +29,13 @@
 
   // 拖拽开始时的处理函数
   function dragstarted(event) {
+    console.log("dragstarted111");
     d3.select(this).raise().style("border", "solid black");
   }
 
   // 拖拽进行中的处理函数
   function dragged(event, d) {
+    console.log("dragstarted2222");
     d3.select(this)
       .attr("x", event.x)
       .attr("y", event.y);
@@ -41,6 +43,7 @@
 
   // 拖拽结束时的处理函数
   function dragended(event) {
+    console.log("dragstarted3333");
     d3.select(this).style("border", "");
   }
 </script>

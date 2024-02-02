@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>D3.js Dragging Rectangles and Circles</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    svg {
+      border: 1px solid #ccc;
+    }
+    .drag-handle {
+        fill: #ccc; /* 三角形的填充颜色 */
+        cursor: pointer;
+        stroke: #999; /* 三角形的边框颜色 */
+        stroke-width: 2; /* 三角形的边框宽度 */
+      }
+      .active-rect {
+        fill: lightgreen; /* 活动进度的颜色 */
+        cursor: pointer;
+        rx: 10; /* 矩形的圆角 */
+        ry: 10;
+      }
+      .inactive-rect {
+        fill: #ddd; /* 非活动进度的颜色 */
+        cursor: pointer;
+        rx: 10;
+        ry: 10;
+      }
+  </style>
+</head>
+<body>
+<svg width="1" height="1">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="0" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="blue"></path>
+    </marker>
+  </defs>
+</svg>
+<script>
+  const rects = [
+    { id: "rect-1", x: 100, y: 150, width: 100, height: 100, fill: 'green', stroke: 'black' },
+    { id: "rect-2", x: 200, y: 350, width: 100, height: 100, fill: 'green', stroke: 'black' },
+    { id: "rect-3", x: 300, y: 450, width: 100, height: 100, fill: 'green', stroke: 'black' },
+    { id: "rect-4", x: 400, y: 550, width: 100, height: 100, fill: 'green', stroke: 'black' },
+    { id: "rect-5", x: 500, y: 650, width: 100, height: 100, fill: 'green', stroke: 'black' },
+    { id: "rect-6", x: 600, y: 750, width: 100, height: 100, fill: 'green', stroke: 'black' },
+    { id: "rect-7", x: 700, y: 850, width: 100, height: 100, fill: 'green', stroke: 'black' },
+    { id: "rect-8", x: 800, y: 950, width: 100, height: 100, fill: 'green', stroke: 'black' }
+
+  ];
+  let currentRect = null;
+  let currentPath = null;
+  const arrowLength = 10; // 箭头长度的估计值，根据实际标记大小调整
+  // 新参数，控制起点和终点的水平段长度
+  let startHorizontalLength = 100; // 起点的水平长度
+  let endHorizontalLength = 100; // 终点的水平长度
+  // 假设我们有一个全局变量来存储路径与对象的关系
+  let pathAssociations = {};
+
+  const svg = d3.select('body').append('svg')
+    .attr('width', 1000)
+    .attr('height', 1000);
+
+  // 绘制矩形并应用拖动行为
+  const rectSelection = svg.selectAll('rect')
+    .data(rects)
+    .enter().append('rect')
+    .attr('id', d => d.id)//d => d.id)
+    .attr('x', d => d.x)
+    .attr('y', d => d.y)
+    .attr('width', d => d.width)
+    .attr('height', d => d.height)
+    .attr('fill', d => d.fill)
+    .attr('stroke', d => d.stroke)
+    .on('mouseover', function (event, d) {
+      // 在mouseover事件中将当前矩形对象赋给全局变量
+      currentRect = d3.select(this);
+      console.log('Mouse is over the rectangle ' + d.id," attr.x="+currentRect.attr("x"));
+    }).on('mouseout', function (event, d) {
+      // 在mouseout事件中将currentRect设置为空
+      currentRect = null;
+      console.log('Mouse is out of the rectangle ' + d.id);
+    });
+
+  rectSelection.call(d3.drag()
+    .on('start', dragStarted)
+    .on('drag', dragged)
+    .on('end', dragEnded));
+
+  
+
+
+  // 绘制圆形
+  rects.forEach(rect => {
+    drawCircles(rect);
+  });
+
+  function drawCircles(rect) {
+    let id = rect.id.replace("rect-","")
+    // // 右侧圆形（位于右侧中点）
+    svg.append('circle')
+      .attr('id',`circle-right-${id}`)
+      .attr('class', `circle circle-right-${id}`)
+      .attr('cx', rect.x + rect.width+5) // 设置为矩形的右上角X坐标
+      .attr('cy', rect.y + rect.height / 2) // 设置为矩形的中点Y坐标
+      .attr('r', 5)
+      .attr('fill', 'red').call(d3.drag()
+      .on('start', dragStarted_cycle) // 定义开始拖拽的行为
+      .on('drag', dragged_cycle)
+      .on('end', dragEnded_cycle));
+  }
+
+  rects.forEach(rect => {
+    
+    console.log("rect.id="+rect.id)
+    let id = rect.id.replace("rect-","")
+    // 初始化绿色圆角矩形（已完成部分）
+    var activeRect = svg.append("rect")
+    .attr('id',`rect1-right-${id}`)
+    .attr("x", rect.x)
+    .attr("y", rect.y)
+    .attr("width", 0)
+    .attr("height", rect.height)
+    .attr("class", "active-rect");
+
+
+    var dragHandle = svg.append("polygon")
+    .attr('id',`polygon-right-${id}`)
+    .attr('class', `circle polygon-right-${id}`)
+      .attr("points", "0,10 10,10 5,0")
+      .attr("transform", "translate(" + (rect.x) + ", " + (rect.y + rect.height) + ")")
+      .attr("class", "drag-handle")
+      .call(d3.drag().on("drag", function(event) { dragMove(event, rect); }));  // 传递 rect 作为参数
+
+      function dragMove(event, rect) {
+        var pointer = d3.pointer(event, svg.node());
+        var x = pointer[0];
+      
+        // 限制拖动范围在矩形内
+        x = Math.max(rect.x, Math.min(rect.x + rect.width, x));
+      
+        // 更新三角形的位置
+        dragHandle.attr("transform", "translate(" + (x - 6) + ", " + (rect.y + rect.height) + ")");
+        
+        // 更新活动进度的宽度
+        var greenWidth = x - rect.x;
+        activeRect.attr("width", greenWidth);
+
+        var pointer = d3.pointer(event, svg.node());
+        var x = pointer[0];
+        x = Math.max(rect.x, Math.min(rect.x + rect.width, x));
+      
+        dragHandle.raise().attr("transform", "translate(" + (x - 6) + ", " + (rect.y + rect.height) + ")");
+        activeRect.raise().attr("width", x - rect.x);
+      }
+
+  });
+
+
+  rects.forEach(rect => {
+    let id = rect.id.replace("rect-", "");
+
+    svg.append("rect")
+        .attr("id", `right-anchor-${id}`)
+        .attr("x", rect.x + rect.width - 3)
+        .attr("y", rect.y)
+        .attr("width", 6)
+        .attr("height", rect.height)
+        .style("fill", "black")
+        .style("cursor", "ew-resize")
+        .call(d3.drag().on("drag", function(event) { dragRightAnchor(event, rect); }));
+
+
+    svg.append("rect")
+        .attr("id", `left-anchor-${id}`)
+        .attr("x", rect.x - 3)
+        .attr("y", rect.y)
+        .attr("width", 6)
+        .attr("height", rect.height)
+        .style("fill", "black")
+        .style("cursor", "ew-resize")
+        .call(d3.drag().on("drag", function(event) { dragLeftAnchor(event, rect); }));
+    });
+
+    
+
+  function dragStarted(event, d) {
+    d3.select(this).raise().classed('active', true);
+  }
+
+  function dragged(event, d) {
+    d.x += event.dx;
+    d.y += event.dy;
+    d3.select(this)
+      .attr('x', d.x)
+      .attr('y', d.y);
+
+    // 更新关联圆形的位置
+    // svg.selectAll(`.circle-left-${d.id}`)
+    //   .attr('cx', d.x-5) // 更新为矩形的左上角X坐标
+    //   .attr('cy', d.y + d.height / 2); // 更新为矩形的中点Y坐标
+    let id = d.id.replace("rect-","")
+    svg.selectAll(`.circle-right-${id}`)
+      .attr('cx', d.x + d.width+5) // 更新为矩形的右上角X坐标
+      .attr('cy', d.y + d.height / 2); // 更新为矩形的中点Y坐标
+
+
+      // 更新当前拖动的矩形的位置
+    d3.select(this)
+    .attr('x', d.x = event.x)
+    .attr('y', d.y = event.y);
+    
+    
+    // 更新与当前矩形关联的活动矩形和拖拽控制点的位置
+    svg.select(`#rect1-right-${id}`)
+      .attr('x', d.x)
+      .attr('y', d.y);
+      
+    svg.select(`#polygon-right-${id}`)
+      .attr("transform", "translate(" + (d.x - 6) + ", " + (d.y + d.height - 5) + ")");
+
+
+    d3.select(`#right-anchor-${id}`).attr("x", d.x + d.width - 3).attr("y", d.y);
+    d3.select(`#left-anchor-${id}`).attr("x", d.x - 3).attr("y", d.y);
+
+      
+
+
+    // 更新关联曲线
+    //1. 找到相关的圆形，然后再根据圆形id，找到所有从这里出去的线。 也就是说，一个圆形，可能有多条线
+   // createPath({""circle.attr("id")}, currentRect.attr("id"),startX,startY,endX,endY);
+
+    updatePathPositions(id+"");
+
+
+    //2. 找到所有以这个矩形为终点的线
+
+
+    //3. 更新线的位置
+
+  }
+
+ 
+  function dragRightAnchor(event, rect) {
+      var newWidth = Math.max(10, event.x - rect.x);
+      rect.width = newWidth;
+      d3.select(`#rect-${rect.id}`).attr("width", newWidth);
+      updateRelatedElements(rect);
+  }
+
+  function dragLeftAnchor(event, rect) {
+      var newWidth = Math.max(10, rect.x + rect.width - event.x);
+      var newX = rect.x + rect.width - newWidth;
+      rect.x = newX;
+      rect.width = newWidth;
+      d3.select(`#rect-${rect.id}`)
+          .attr("x", newX)
+          .attr("width", newWidth);
+      updateRelatedElements(rect);
+  }
+
+  function updateRelatedElements(rect) {
+      let id = rect.id.replace("rect-","")
+        // 更新当前拖动的矩形的位置
+        d3.select(`#right-anchor-${id}`).attr("x", rect.x + rect.width - 3);
+        d3.select(`#left-anchor-${id}`).attr("x", rect.x - 3);
+      d3.selectAll(`#${rect.id}`)
+      .attr('x', rect.x)
+      .attr('y', rect.y)
+      .attr('width', rect.width)
+      .attr('height', rect.height);
+      
+      d3.selectAll(`.circle-right-${id}`)
+        .attr('cx', rect.x + rect.width+8) // 更新为矩形的右上角X坐标
+        .attr('cy', rect.y + rect.height / 2); // 更新为矩形的中点Y坐标
+  }
+
+  function dragEnded(event, d) {
+    d3.select(this).classed('active', false);
+
+  }
+
+  //以下添加圆的拖拽事件
+
+
+
+
+  function dragStarted_cycle(event) {
+    d3.select(this).raise(); // 确保被拖拽的元素在顶层
+    currentPath = svg.append('path')
+      .style('fill', 'none')
+      .style('stroke', 'blue')
+      .attr('d', '');
+  }
+
+  function dragged_cycle(event,circle) {
+    const mouse = d3.pointer(event, svg.node()); // 获取相对于SVG的鼠标位置
+    const x = mouse[0],
+      y = mouse[1];
+    const selectedElement = d3.select(this);
+    if(currentRect!=null && currentRect.attr &&  typeof currentRect.attr === "function"){
+      console.log(currentRect.attr)
+      const rect2X = parseInt(currentRect.attr('x')),
+        rect2Y = parseInt(currentRect.attr('y')),
+        rect2Height = parseInt(currentRect.attr('height'));
+
+      // 计算第二个矩形左侧中点的Y坐标
+      const rect2MidY = rect2Y + rect2Height / 2;
+
+      // 检测鼠标是否位于第二个矩形上方
+      if (x >= rect2X && x <= rect2X + currentRect.attr('width') && y >= rect2Y && y <= rect2Y + rect2Height) {
+        // 鼠标位于第二个矩形上方时，曲线终点固定在矩形的左侧中点
+        drawCurve(rect2X, rect2MidY, true,selectedElement);
+      } else {
+        // 鼠标不在第二个矩形上方，曲线终点跟随鼠标移动
+        drawCurve(x, y, false,selectedElement);
+      }
+    }else{
+      drawCurve(x, y, false,selectedElement);
+    }
+
+
+
+
+
+  }
+
+  function drawCurve(x, y, fixed,circle) {
+    console.log("drawCurve fixed="+fixed)
+    const startX = parseInt(circle.attr('cx')),
+      startY = parseInt(circle.attr('cy'));
+    let endX = x,
+      endY = y;
+    if(currentRect!=null && currentRect.attr &&  typeof currentRect.attr === "function"){
+      if (fixed) {
+        // 如果终点固定，则计算第二个矩形左侧中点的坐标，并考虑箭头长度的调整
+        const rect2X = parseInt(currentRect.attr('x')),
+          rect2Y = parseInt(currentRect.attr('y')),
+          rect2Height = parseInt(currentRect.attr('height'));
+        endX = rect2X - arrowLength; // 考虑箭头长度的调整
+        endY = rect2Y + rect2Height / 2;
+      }
+      if(circle.attr("id").replace("circle-right-","")==currentRect.attr("id")){
+        console.log("circle.attr(id)="+circle.attr("id").replace("circle-right-","")+" currentRect.attr(id)="+currentRect.attr("id"))
+        return;
+      }
+    }
+
+
+
+
+
+
+    // 构建路径数据字符串，包括起始和终止的水平长度调整
+    const pathData = `M ${startX},${startY}
+                      C ${startX + startHorizontalLength},${startY} ${endX - endHorizontalLength},${endY} ${endX},${endY}`;
+
+    currentPath.attr('d', pathData)
+      .attr('marker-end', 'url(#arrow)')
+      .attr("startX",startX)
+      .attr("startY",startY)
+      .attr("endX",endX)
+      .attr("endY",endY);
+
+
+
+  }
+  //
+  function dragEnded_cycle(event) {
+    const mouse = d3.pointer(event, svg.node()); // 获取鼠标位置，相对于SVG容器
+    const x = mouse[0],
+      y = mouse[1];
+    if(currentRect!=null && currentRect.attr &&  typeof currentRect.attr === "function"){
+      const rect2X = parseInt(currentRect.attr('x')),
+        rect2Y = parseInt(currentRect.attr('y')),
+        rect2Width = parseInt(currentRect.attr('width')),
+        rect2Height = parseInt(currentRect.attr('height'));
+      const selectedElement = d3.select(this);
+      if(selectedElement.attr("id").replace("circle-right-","")==currentRect.attr("id")){
+        currentPath.attr('d', '');
+        currentPath = null;
+        //console.log("circle.attr(id)="+circle.attr("id").replace("circle-right-","")+" currentRect.attr(id)="+currentRect.attr("id"))
+        return;
+      }
+      // 判断鼠标释放时是否在第二个矩形上方
+      if (x < rect2X || x > rect2X + rect2Width || y < rect2Y || y > rect2Y + rect2Height) {
+        currentPath.attr('d', ''); // 不在第二个矩形上方，删除曲线
+      }else{
+        let circleid = selectedElement.attr("id").replace("circle-right-","");
+        let rectid = currentRect.attr("id").replace("rect-","");
+        let pathid = "path-"+circleid+"-"+rectid;
+        currentPath.attr("id",pathid);
+        createPath(pathid,{"id":circleid,"x":currentPath.attr("startX"),"y":currentPath.attr("startY")}, {"id":rectid,"x":currentPath.attr("endX"),"y":currentPath.attr("endY")});
+      }
+    }else{
+      currentPath.attr('d', '');
+    }
+    currentPath = null;
+    // 如果鼠标在第二个矩形上方，曲线保持不变
+  }
+
+
+
+
+  function createPath(pathid,startObject, endObject) {
+    // 创建路径并获取其ID（此处为示例，需要根据实际情况生成或指定ID）
+    //let pathId = 'path-' + Object.keys(pathAssociations).length;
+
+    // 存储路径与起始/终点对象的关系
+    pathAssociations[pathid] = {
+      start: startObject, // 起始对象的引用或标识符
+      end: endObject // 终点对象的引用或标识符
+    };
+
+    // 省略创建和添加路径到SVG的代码...
+  }
+
+  function updatePathPositions(objectId) {
+    // 根据被拖动对象的ID查找和更新所有关联的路径
+    Object.entries(pathAssociations).forEach(([pathId, association]) => {
+      if (association.start.id === objectId || association.end.id === objectId) {
+        // 如果当前路径与被拖动的对象相关联，重新计算并更新路径
+        let newPathD = calculatePathD(association.start, association.end);
+        d3.select('#' + pathId).attr('d', newPathD);
+      }
+    });
+  }
+
+  function calculatePathD(startObject, endObject) {
+    // 根据起始和终点对象的位置计算路径的"d"属性
+    // 这里仅为示例，具体实现应根据起始和终点对象的实际位置来计算
+
+    // const pathData = `M ${startX},${startY}
+    //                   C ${startX + startHorizontalLength},${startY} ${endX - endHorizontalLength},${endY} ${endX},${endY}`;
+    let startid = startObject.id;
+    let endid = endObject.id;
+    let start2 = d3.select("#circle-right-"+startid);
+    // let end2 = d3.select("#rect"+endid);
+    //startObject = {"id":startid,"x":start2.attr("x"),"y":start2.attr("y")}
+    //endObject = {"id":endid,"x":end2.attr("x"),"y":end2.attr("y")}
+
+    let startX = parseInt(start2.attr('cx')),
+      startY = parseInt(start2.attr('cy'));
+
+    endRect = d3.select("#rect-"+endid);
+    const rect2X = parseInt(endRect.attr('x')),
+      rect2Y = parseInt(endRect.attr('y')),
+      rect2Height = parseInt(endRect.attr('height'));
+    endX = rect2X - arrowLength; // 考虑箭头长度的调整
+    endY = rect2Y + rect2Height / 2;
+
+    let pathData = `M ${startX},${startY} C ${startX+ startHorizontalLength},${startY} ${endX - endHorizontalLength},${endY} ${endX},${endY}`;
+    return pathData;
+  }
+
+
+
+</script>
+
+</body>
+</html>

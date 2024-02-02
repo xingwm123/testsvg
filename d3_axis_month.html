@@ -22,7 +22,7 @@
 
 
   // 创建一个包含姓名的数组
-  const names = ["幸文明", "李飞", "张珊", "李四", "王五", "小强", "周星驰", "周润发", "大张伟", "老马"];
+  const names = ["Alice", "Bob", "Carol", "David", "Eve", "Frank", "Grace", "Helen", "Ivy", "Jack"];
 
   const margin = { top: 45, right: 20, bottom: 30, left: 40 }; // 将top调整为45，稍高于x轴的位置
   const height = svgHeight - margin.top - margin.bottom; // 根据新的margin.top计算实际的高度
@@ -68,6 +68,16 @@
 
   const svg = d3.select("svg");
 
+  // // 添加年月时间轴
+  // svg.append("g")
+  //   .attr("transform", "translate(0,20)") // 根据需要调整位置
+  //   .call(xAxisTop);
+  //
+  // // 添加日期时间轴
+  // svg.append("g")
+  //   .attr("transform", "translate(0,40)") // 根据需要进一步调整位置
+  //   .call(xAxisBottom);
+
   // 添加年月时间轴（x轴顶部），调整其位置以确保与y轴重合
   svg.append("g")
     .attr("transform", `translate(0,${margin.top})`) // 确保x轴的位置正确
@@ -78,6 +88,10 @@
     .attr("transform", `translate(0,${margin.top + 20})`) // 确保日期轴正下方的位置正确
     .call(xAxisBottom);
 
+  // 添加日期时间轴（x轴底部），调整其位置以确保与y轴重合
+  // svg.append("g")
+  //   .attr("transform", `translate(${margin.left},${svgHeight - margin.bottom})`) // 将x轴底部放在y轴的起始位置
+  //   .call(xAxisBottom);
 
 
   const currentDate = new Date(); // 获取当前日期
@@ -91,6 +105,11 @@
     .attr('y2', 800) // y2设置为SVG的高度，或者你希望线结束的位置
     .attr('stroke', 'red') // 设置线条颜色为红色
     .attr('stroke-width', 2); // 设置线条宽度
+
+
+
+  // // 获取当前日期并计算对应的x坐标
+  // const currentDate = new Date();
 
   // 选择当前日期对应的坐标轴刻度文本元素
   svg.selectAll('.tick')

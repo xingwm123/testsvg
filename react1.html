@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>React入门示例</title>
+  <!-- 引入React核心库 -->
+  <script src="https://unpkg.com/react/umd/react.development.js"></script>
+  <!-- 引入React DOM库 -->
+  <script src="https://unpkg.com/react-dom/umd/react-dom.development.js"></script>
+  <!-- 引入Babel库，用于在浏览器中将JSX语法转换为普通的JavaScript -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+<div id="root"></div> <!-- React将在这个div中渲染组件 -->
+
+在这个示例中，我们创建了一个名为HelloReact的函数组件。这个组件通过返回一个 h1 标签来显示消息“Hello, React!”。使用ReactDOM.render方法，我们将这个组件渲染到页面上id为root的div元素中。
+
+  为了在浏览器中使用JSX，我们引入了Babel库。请注意，这种在客户端使用Babel转换JSX的方式仅适用于学习和原型开发，在生产环境中，你应该使用构建工具（如Webpack和Babel）预先将JSX编译为JavaScript。
+
+<script type="text/babel">
+  // 使用JSX创建一个简单的React组件
+  function HelloReact1() {
+    return <h1>Hello, React!</h1>;
+  }
+
+  // 使用ReactDOM将React组件渲染到页面上
+  ReactDOM.render(<HelloReact1 />, document.getElementById('root'));
+</script>
+</body>
+</html>

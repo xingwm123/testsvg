@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>D3.js Dragging Rectangles and Circles</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    svg {
+      border: 1px solid #ccc;
+    }
+    .drag-handle {
+      fill: #ccc; /* 三角形的填充颜色 */
+      cursor: pointer;
+      stroke: #999; /* 三角形的边框颜色 */
+      stroke-width: 2; /* 三角形的边框宽度 */
+    }
+    .active-rect {
+      fill: lightgreen; /* 活动进度的颜色 */
+      cursor: pointer;
+      rx: 10; /* 矩形的圆角 */
+      ry: 10;
+    }
+  </style>
+</head>
+<body>
+<svg width="960" height="800"></svg>
+
+<svg width="1" height="1">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="0" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="blue"></path>
+    </marker>
+  </defs>
+</svg>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
