@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>项目时间轴</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    /* 增加一些样式以改善可视化效果 */
+    .axis path,
+    .axis line {
+      fill: none;
+      stroke: black;
+      shape-rendering: crispEdges;
+    }
+    .axis text {
+      font-family: sans-serif;
+      font-size: 10px;
+    }
+    .month-label {
+      font-family: sans-serif;
+      font-size: 16px;
+      text-anchor: start;
+    }
+    .project {
+      fill: steelblue;
+      opacity: 0.7;
+    }
+    .progress {
+      fill: lightgreen;
+    }
+    .week-label {
+      font-family: sans-serif;
+      font-size: 12px;
+      text-anchor: middle;
+    }
+    .svg-container {
+      position: relative;
+      width: 100%;
+      overflow-x: scroll; /* 这使得容器在水平方向上可滚动 */
+      white-space: nowrap; /* 这确保了所有的内容都在一行内，从而可能导致滚动 */
+    }
+    .control-button {
+      cursor: pointer;
+      padding: 5px 10px;
+      margin: 5px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      background-color: #f9f9f9;
+      font-size: 12px;
+      position: fixed;
+      top: 10px;
+      z-index: 10;
+    }
+    #today-button {
+      right: 50px;
+    }
+    #scroll-left {
+      right: 100px;
+    }
+    #scroll-right {
+      right: 10px;
+    }
+    .month-label {
+      font-family: sans-serif;
+      font-size: 12px;
+      fill: black;
+    }
+
+    .dropdown {
+      position: fixed;
+      top: 10px; /* 与按钮的顶部对齐 */
+      right: 150px; /* 与页面右侧保持一定的距离 */
+      z-index: 1000; /* 确保下拉框在最上面 */
+    }
+    /* 可能需要添加的额外样式来美化下拉框 */
+    select {
+      padding: 5px 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      background-color: #f9f9f9;
+      font-size: 12px;
+    }
+
+  </style>
+</head>
+<body>
+
+<div class="svg-container">
+  <svg width="2000" height="150"></svg>
+</div>
+<div id="scroll-left" class="control-button">&#9664;</div>
+<div id="today-button" class="control-button">今天</div>
+<div id="scroll-right" class="control-button">&#9654;</div>
+
+<!-- 下拉框 -->
+<div class="dropdown">
+  <select id="timeframe-select">
+    <option value="hours">Hours</option>
+    <option value="day">Day</option>
+    <option value="week">Week</option>
+    <option value="bi-week">Bi-week</option>
+    <option value="month">Month</option>
+    <option value="quarter">Quarter</option>
+    <option value="year">Year</option>
+  </select>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    // 设置视图的宽度和高度以及边距
+    const margin = { top: 60, right: 20, bottom: 30, left: 20 };
+    const svg = d3.select('svg');
+    const width = +svg.attr('width') - margin.left - margin.right;
+    const height = +svg.attr('height') - margin.top - margin.bottom;
+    const container = document.querySelector('.svg-container');
+
+    // 定义两周时间段的开始和结束日期
+    const startDate = new Date(2024, 0, 26); // 月份是从0开始的，0代表一月
+    const endDate = new Date(2024, 1, 9); // 结束日期设置为两周后
+
+
+    // 定义中文的区域设置对象
+    var chineseLocale = d3.timeFormatLocale({
+      "dateTime": "%a %b %e %X %Y",
+      "date": "%Y/%-m/%-d",
+      "time": "%H:%M:%S",
+      "periods": ["上午", "下午"],
+      "days": ["星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"],
+      "shortDays": ["周日", "周一", "周二", "周三", "周四", "周五", "周六"],
+      "months": ["一月", "二月", "三月", "四月", "五月", "六月", "七月", "八月", "九月", "十月", "十一月", "十二月"],
+      "shortMonths": ["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"]
+    });
+
+    // 定义x轴的时间比例尺
+    const xScale = d3.scaleTime()
+      .domain([startDate, endDate])
+      .range([margin.left, width - margin.right]);
+
+    // 使用中文区域设置对象创建时间格式函数
+    var chineseTimeFormat = chineseLocale.format("%a %d");
+
+    // 绘制x轴，每天显示一个刻度
+    const xAxis = d3.axisTop(xScale)
+      .ticks(d3.timeDay.every(1))
+      .tickFormat(chineseTimeFormat); // 使用中文格式化函数
+
+    // 添加x轴到SVG
+    svg.append('g')
+      .attr('class', 'axis')
+      .attr('transform', `translate(0,${margin.top})`)
+      .call(xAxis);
+
+    // 添加月份标签
+    const months = xScale.ticks(d3.timeMonth.every(1));
+    months.forEach(month => {
+      svg.append('text')
+        .attr('class', 'month-label')
+        .attr('x', xScale(month))
+        .attr('y', 20) // 调整y坐标，使其位于x轴上方适当位置
+        .text(d3.timeFormat('%B %Y')(month));
+    });
+// 今天按钮事件处理器
+    document.getElementById('today-button').addEventListener('click', function() {
+      const today = new Date();
+      const todayPosition = xScale(today);
+      container.scrollLeft = todayPosition - container.clientWidth / 2 + margin.left;
+    });
+
+// 向左滚动按钮事件处理器
+    document.getElementById('scroll-left').addEventListener('click', function() {
+      startDate.setDate(startDate.getDate() - 1); // 向左滚动一天
+      endDate.setDate(endDate.getDate() - 1);
+      xScale.domain([startDate, endDate]);
+      drawAxis();
+      container.scrollLeft -= 100;
+    });
+
+// 向右滚动按钮事件处理器
+    document.getElementById('scroll-right').addEventListener('click', function() {
+      startDate.setDate(startDate.getDate() + 1); // 向右滚动一天
+      endDate.setDate(endDate.getDate() + 1);
+      xScale.domain([startDate, endDate]);
+      drawAxis();
+      container.scrollLeft += 100;
+    });
+
+    function drawAxis() {
+      svg.selectAll('g.axis').remove();
+      svg.selectAll('.month-label').remove(); // Remove old labels
+
+      const gX = svg.append('g')
+        .attr('class', 'axis')
+        .attr('transform', `translate(${margin.left},${margin.top})`)
+        .call(xAxis);
+
+      gX.selectAll('.tick text')
+        .style('fill', function(d) {
+          return (d.getDay() === 0 || d.getDay() === 6) ? 'lightgrey' : 'black';
+        });
+
+      // 添加新的月份标签，确保它们在垂直方向上与坐标轴有足够的空间
+      xScale.ticks(d3.timeMonth.every(1)).forEach(function(month) {
+        gX.append('text')
+          .attr('class', 'month-label')
+          .attr('x', xScale(month))
+          // 提升标签的位置，向上移动更多，比如20或者更多
+          .attr('y', -30) // 你可以根据需要调整这个值
+          .text(d3.timeFormat('%Y年%m月')(month));
+      });
+    }
+    // 假设项目数据如下
+    const projects = [
+      { name: 'Sample Project: Performance', startDate: new Date(2024, 0, 26), endDate: new Date(2024, 0, 30), progress: 50 },
+      { name: 'Sample Project: User Education', startDate: new Date(2024, 0, 31), endDate: new Date(2024, 1, 2), progress: 0 }
+    ];
+
+    // 绘制项目条
+    projects.forEach((project, i) => {
+      const y = margin.top + 30 + i * 30;
+      svg.append('rect')
+        .attr('class', 'project')
+        .attr('x', xScale(project.startDate))
+        .attr('width', xScale(project.endDate) - xScale(project.startDate))
+        .attr('y', y)
+        .attr('height', 20);
+
+      // 绘制进度条
+      if (project.progress > 0) {
+        svg.append('rect')
+          .attr('class', 'progress')
+          .attr('x', xScale(project.startDate))
+          .attr('width', (xScale(project.endDate) - xScale(project.startDate)) * (project.progress / 100))
+          .attr('y', y)
+          .attr('height', 20);
+      }
+    });
+
+    // 获取下拉框元素
+    var selectElement = document.getElementById('timeframe-select');
+
+    // 添加事件监听器，当选项变化时触发
+    selectElement.addEventListener('change', function() {
+      var value = selectElement.value;
+
+      // 根据选中的值跳转到不同的页面
+      switch (value) {
+        case 'hours':
+          window.location.href = 'hours.html'; // 将跳转到小时视图
+          break;
+        case 'day':
+          window.location.href = 'day.html'; // 将跳转到天视图
+          break;
+        case 'week':
+          window.location.href = 'week.html'; // 将跳转到周视图
+          break;
+        case 'bi-week':
+          window.location.href = 'bi-week.html'; // 将跳转到双周视图
+          break;
+        case 'month':
+          window.location.href = 'month.html'; // 将跳转到月视图
+          break;
+        case 'quarter':
+          window.location.href = 'quarter.html'; // 将跳转到季度视图
+          break;
+        case 'year':
+          window.location.href = 'year.html'; // 将跳转到年视图
+          break;
+      }
+    });
+  });
+</script>
+
+</body>
+</html>

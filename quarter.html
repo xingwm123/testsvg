@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>季度</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    .axis path,
+    .axis line {
+      fill: none;
+      stroke: black;
+      shape-rendering: crispEdges;
+    }
+    .axis text {
+      font-family: sans-serif;
+      font-size: 10px;
+    }
+    .mark {
+      stroke: red;
+      stroke-width: 2;
+    }
+    .svg-container {
+      position: relative;
+      width: 100%;
+      overflow-x: scroll;
+      white-space: nowrap;
+    }
+    .control-button {
+      cursor: pointer;
+      padding: 5px 10px;
+      margin: 5px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      background-color: #f9f9f9;
+      font-size: 12px;
+      position: fixed;
+      top: 10px;
+      z-index: 10;
+    }
+    #today-button {
+      right: 50px;
+    }
+    #scroll-left {
+      right: 100px;
+    }
+    #scroll-right {
+      right: 10px;
+    }
+    .dropdown {
+      position: fixed;
+      top: 10px; /* 与按钮的顶部对齐 */
+      right: 150px; /* 与页面右侧保持一定的距离 */
+      z-index: 1000; /* 确保下拉框在最上面 */
+    }
+    /* 可能需要添加的额外样式来美化下拉框 */
+    select {
+      padding: 5px 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      background-color: #f9f9f9;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="svg-container">
+  <svg width="2000" height="150"></svg>
+</div>
+
+<div id="scroll-left" class="control-button">&#9664;</div>
+<div id="today-button" class="control-button">今天</div>
+<div id="scroll-right" class="control-button">&#9654;</div>
+
+<!-- 下拉框 -->
+<div class="dropdown">
+  <select id="timeframe-select">
+    <option value="hours">Hours</option>
+    <option value="day">Day</option>
+    <option value="week">Week</option>
+    <option value="bi-week">Bi-week</option>
+    <option value="month">Month</option>
+    <option value="quarter">Quarter</option>
+    <option value="year">Year</option>
+  </select>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const margin = { top: 20, right: 20, bottom: 30, left: 20 };
+    const svg = d3.select('svg');
+    const width = +svg.attr('width') - margin.left - margin.right;
+    const height = +svg.attr('height') - margin.top - margin.bottom;
+    const container = document.querySelector('.svg-container');
+
+    // 设置开始和结束日期以覆盖半年的时间
+    let today = new Date();
+    let startDate = new Date(today.getFullYear(), today.getMonth() - 6, 1); // 半年前的第一天
+    let endDate = new Date(today.getFullYear(), today.getMonth() + 6, 0); // 半年后的最后一天
+
+    // 设置x轴的时间比例尺，覆盖半年时间
+    const xScale = d3.scaleTime()
+      .domain([startDate, endDate])
+      .range([0, width]);
+
+// 自定义刻度值，每7天一个刻度
+    const weekTicks = d3.utcMonday.every(1).range(startDate, endDate);
+
+// 自定义刻度值，每个月的第一天一个刻度
+    const monthTicks = d3.timeMonths(startDate, endDate);
+
+// 创建x轴
+    const xAxis = d3.axisBottom(xScale)
+      .tickSizeInner(10)
+      .tickSizeOuter(0)
+      .tickPadding(10)
+      .tickValues([...weekTicks, ...monthTicks]) // 合并两个刻度数组
+      .tickFormat((d) => {
+        // 每月的第一天显示月份
+        if (d.getDate() === 1) {
+          return d3.timeFormat("%Y年%-m月")(d);
+        }
+        // 其他刻度不显示文本
+        return '';
+      });
+
+    // 绘制坐标轴
+    function drawAxis() {
+      // 清除已有的坐标轴
+      svg.selectAll('g.axis').remove();
+      svg.selectAll('text.year-month-label').remove();
+
+      // 创建新的坐标轴
+      const gX = svg.append('g')
+        .attr('class', 'axis')
+        .attr('transform', `translate(0, ${height - 40})`)
+        .call(d3.axisBottom(xScale)
+          .tickSizeInner(10)
+          .tickSizeOuter(0)
+          .tickPadding(10)
+          .tickValues(xScale.ticks(d3.timeDay.every(7)).concat(xScale.ticks(d3.timeMonth.every(1))))
+          .tickFormat(function(date){
+            // 每个月的第一天显示月份和日期
+            if (new Date(date).getDate() === 1) {
+              return d3.timeFormat("%Y年%m月")(date);
+            }
+            // 每7天显示一个刻度
+            return d3.timeFormat("%d")(date);
+          })
+        );
+
+      // 如果你想要对一号的文本标签做特殊处理（比如改变样式），可以这样做
+      gX.selectAll('.tick').each(function(date) {
+        if (new Date(date).getDate() === 1) {
+          d3.select(this).select('text').attr('y', -20); // 调整一号文本标签的位置
+        }
+      });
+    }
+    drawAxis();
+
+    container.scrollLeft = xScale(today) - container.offsetWidth / 2; // 滚动到今天
+
+    document.getElementById('today-button').addEventListener('click', function () {
+      container.scrollLeft = xScale(today) - container.offsetWidth / 2;
+    });
+
+    document.getElementById('scroll-left').addEventListener('click', function () {
+      startDate.setDate(startDate.getDate() - 1); // 向左滚动一天
+      endDate.setDate(endDate.getDate() - 1);
+      xScale.domain([startDate, endDate]);
+      drawAxis();
+      container.scrollLeft -= 100;
+    });
+
+    document.getElementById('scroll-right').addEventListener('click', function () {
+      startDate.setDate(startDate.getDate() + 1); // 向右滚动一天
+      endDate.setDate(endDate.getDate() + 1);
+      xScale.domain([startDate, endDate]);
+      drawAxis();
+      container.scrollLeft += 100;
+    });
+
+    // 获取下拉框元素
+    var selectElement = document.getElementById('timeframe-select');
+
+    // 添加事件监听器，当选项变化时触发
+    selectElement.addEventListener('change', function() {
+      var value = selectElement.value;
+
+      // 根据选中的值跳转到不同的页面
+      switch (value) {
+        case 'hours':
+          window.location.href = 'hours.html'; // 将跳转到小时视图
+          break;
+        case 'day':
+          window.location.href = 'day.html'; // 将跳转到天视图
+          break;
+        case 'week':
+          window.location.href = 'week.html'; // 将跳转到周视图
+          break;
+        case 'bi-week':
+          window.location.href = 'bi-week.html'; // 将跳转到双周视图
+          break;
+        case 'month':
+          window.location.href = 'month.html'; // 将跳转到月视图
+          break;
+        case 'quarter':
+          window.location.href = 'quarter.html'; // 将跳转到季度视图
+          break;
+        case 'year':
+          window.location.href = 'year.html'; // 将跳转到年视图
+          break;
+      }
+    });
+
+  });
+</script>
+
+</body>
+</html>
