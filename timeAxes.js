@@ -1,3 +1,6 @@
+
+import { sharedState } from './common.js';
+
 // timeAxes.js
 export function createTimeAxes(svg, scaleTime) {
 
@@ -75,26 +78,26 @@ export function createTimeAxes(svg, scaleTime) {
 // // 获取当前日期并计算对应的x坐标
 // const currentDate = new Date();
 
-// 选择当前日期对应的坐标轴刻度文本元素
-svg.selectAll('.tick')
-  .each(function(d) {
-    if (d3.timeFormat("%Y-%m-%d")(d) === d3.timeFormat("%Y-%m-%d")(currentDate)) {
-      // 获取文本元素的bounding box
-      const bbox = this.getBBox();
+// // 选择当前日期对应的坐标轴刻度文本元素
+// svg.selectAll('.tick')
+//   .each(function(d) {
+//     if (d3.timeFormat("%Y-%m-%d")(d) === d3.timeFormat("%Y-%m-%d")(currentDate)) {
+//       // 获取文本元素的bounding box
+//       const bbox = this.getBBox();
 
-      // 在文本元素下添加绿色矩形
-      const padding = 2; // 设置一些内边距
-      const rect = d3.select(this).insert("rect", "text")
-        .attr("x", bbox.x - padding)
-        .attr("y", bbox.y - padding)
-        .attr("width", bbox.width + 2 * padding)
-        .attr("height", bbox.height + 2 * padding)
-        .attr("fill", "green");
+//       // 在文本元素下添加绿色矩形
+//       const padding = 2; // 设置一些内边距
+//       const rect = d3.select(this).insert("rect", "text")
+//         .attr("x", bbox.x - padding)
+//         .attr("y", bbox.y - padding)
+//         .attr("width", bbox.width + 2 * padding)
+//         .attr("height", bbox.height + 2 * padding)
+//         .attr("fill", "green");
 
-      // 确保文本在矩形之上
-      d3.select(this).raise();
-    }
-  });
+//       // 确保文本在矩形之上
+//       d3.select(this).raise();
+//     }
+//   });
 
 
 
@@ -117,7 +120,51 @@ svg.selectAll('.tick')
       .attr("transform", `translate(${margin.left},${xAxisBottomPosition})`)
       .call(yAxis);
 
+
+    // 保存日期的x坐标
+    const dates = d3.timeDay.range(startDate, endDate); // 生成开始日期和结束日期之间的每一天
+    dates.forEach(date => {
+      const x = scaleTime(date);
+      sharedState.setCoordinates(d3.timeFormat("%Y-%m-%d")(date), { x });
+      console.log(`Saving coordinates for key: ${d3.timeFormat("%Y-%m-%d")(date)}`, x);
+    });
+
+// 保存名字的y坐标
+    names.forEach((name, index) => {
+      const y = yScale(index);
+      if (!sharedState.hasCoordinates(name)) {
+        sharedState.setCoordinates(name, { y });
+      } else {
+        sharedState.getCoordinates(name).y = y;
+      }
+    });
+
   }
+
+
+export function  getCoordinates(name, date, end) {
+  // 将开始和结束日期字符串转换为Date对象
+  const startDate = new Date(date);
+  const endDate = new Date(end);
+
+  // 使用scaleTime比例尺来计算开始日期和结束日期对应的x坐标
+  const startX = sharedState.getCoordinates(d3.timeFormat("%Y-%m-%d")(startDate))?.x;
+  const endX = sharedState.getCoordinates(d3.timeFormat("%Y-%m-%d")(endDate))?.x;
+
+  // 计算这两个x坐标之间的差值，即为时间段在图表上表示的宽度
+  const width = endX !== undefined && startX !== undefined ? endX - startX : null;
+
+  // 获取名字对应的y坐标
+  const y = sharedState.getCoordinates(name)?.y;
+
+  if (width !== null && y !== undefined) {
+    // 如果找到了对应的x坐标和y坐标，返回它们以及计算出的宽度
+    return { x: startX, y, width };
+  } else {
+    // 如果没有找到对应的坐标或宽度，返回null
+    return null;
+  }
+}
 
 
   

@@ -5,6 +5,7 @@ import { sharedState } from './common.js';
 
 
 
+
 export function createDraggableRects(svg, rects) {
 
     let currentRect = null;
@@ -15,6 +16,9 @@ export function createDraggableRects(svg, rects) {
 
     let startHorizontalLength = 100; // 起点的水平长度
     let endHorizontalLength = 100; // 终点的水平长度
+
+
+    
 
     // 绘制矩形并应用拖动行为
     const rectSelection = svg.selectAll('rect')
@@ -50,53 +54,44 @@ export function createDraggableRects(svg, rects) {
 
 
     function dragStarted(event, d) {
-        d3.select(this).raise().classed('active', true);
+        d3.select(this).classed('active', true);
       }
 
 
       function dragged(event, d) {
         d.x += event.dx;
-        d.y += event.dy;
+        // 不更新 d.y，因此矩形不会在垂直方向上移动
         d3.select(this)
           .attr('x', d.x)
-          .attr('y', d.y);
-      
+          // .attr('y', d.y); // 这行被注释掉或移除，因为我们不更新y坐标
+    
         // 更新关联圆形的位置
-        // svg.selectAll(`.circle-left-${d.id}`)
-        //   .attr('cx', d.x-5) // 更新为矩形的左上角X坐标
-        //   .attr('cy', d.y + d.height / 2); // 更新为矩形的中点Y坐标
-        let id = d.id.replace("rect-","")
+        let id = d.id.replace("rect-","");
         svg.selectAll(`.circle-right-${id}`)
-          .attr('cx', d.x + d.width+5) // 更新为矩形的右上角X坐标
-          .attr('cy', d.y + d.height / 2); // 更新为矩形的中点Y坐标
-      
-      
-          // 更新当前拖动的矩形的位置
+          .attr('cx', d.x + d.width + 5) // 更新为矩形的右上角X坐标
+          .attr('cy', d.y + d.height / 2); // Y坐标保持不变
+    
+        // 更新当前拖动的矩形的位置
         d3.select(this)
-        .attr('x', d.x = event.x)
-        .attr('y', d.y = event.y);
-        
-        
+          .attr('x', d.x = event.x)
+          // .attr('y', d.y); // 同样，不更新y坐标
+    
         // 更新与当前矩形关联的活动矩形和拖拽控制点的位置
         svg.select(`#rect1-right-${id}`)
           .attr('x', d.x)
-          .attr('y', d.y);
-          
+          // .attr('y', d.y); // 不需要更新y坐标
+          var storedTriangleX2 = parseFloat(localStorage.getItem(`rect1-right-${id}-x`)); // 获取存储的数字并转换为浮点数
+          var storedTriangleX = d.x - 6;
+          if(localStorage.getItem(`rect1-right-${id}-x`)){
+            storedTriangleX = d.x + storedTriangleX2 - 6;
+          }
         svg.select(`#polygon-right-${id}`)
-          .attr("transform", "translate(" + (d.x - 6) + ", " + (d.y + d.height - 5) + ")");
-      
-      
-        d3.select(`#right-anchor-${id}`).attr("x", d.x + d.width - 3).attr("y", d.y);
-        d3.select(`#left-anchor-${id}`).attr("x", d.x - 3).attr("y", d.y);
-      
+          .attr("transform", "translate(" + (storedTriangleX) + ", " + (d.y + d.height) + ")");
+        
+        d3.select(`#right-anchor-${id}`).attr("x", d.x + d.width - 3); // y坐标保持不变
+        d3.select(`#left-anchor-${id}`).attr("x", d.x - 3); // 同上
+    
         updatePathPositions(id+"");
-      
-      
-        //2. 找到所有以这个矩形为终点的线
-      
-      
-        //3. 更新线的位置
-      
     }
 
     function updatePathPositions(objectId) {

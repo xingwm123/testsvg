@@ -1,0 +1,103 @@
+{
+  "code": 200,
+  "data": {
+    "titles": [
+      {
+        "id": "todo",
+        "sId": 0,
+        "name": "待办",
+        "status": 10,
+        "color": "#F1F0F0",
+        "items": null
+      },
+      {
+        "id": "doing",
+        "sId": 0,
+        "name": "进行中",
+        "status": 20,
+        "color": "#FFFAE0",
+        "items": null
+      },
+      {
+        "id": "done",
+        "sId": 0,
+        "name": "完成",
+        "status": 30,
+        "color": "#E9F6F1",
+        "items": null
+      }
+    ],
+    "dataSource": [
+      {
+        "id": "62569485938",
+        "number": "730",
+        "name": "一级任务",
+        "startDate": "2024-02-05",
+        "dueDate": "2024-02-06",
+        "owner": "陈二kaAm",
+        "status": {
+          "id": 62568939426,
+          "name": "待办",
+          "type": 10,
+          "value": "#F1F0F0"
+        },
+        "relate3": null,
+        "relate5": [
+          62569527726
+        ],
+        "fartherId": 0,
+        "sortOrder": 730,
+        "subItems": [
+          {
+            "id": "62569527726",
+            "number": "731",
+            "name": "二级任务",
+            "startDate": "2024-02-06",
+            "dueDate": "",
+            "owner": "陈二kaAm",
+            "status": {
+              "id": 62568939426,
+              "name": "待办",
+              "type": 10,
+              "value": "#F1F0F0"
+            },
+            "relate3": [
+              62569485938
+            ],
+            "relate5": [
+              62569570942,
+              62569570942
+            ],
+            "fartherId": 0,
+            "sortOrder": 731,
+            "subItems": [
+              {
+                "id": "62569570942",
+                "number": "732",
+                "name": "三级任务",
+                "startDate": "2024-02-07",
+                "dueDate": "",
+                "owner": "陈二kaAm",
+                "status": {
+                  "id": 62568939426,
+                  "name": "待办",
+                  "type": 10,
+                  "value": "#F1F0F0"
+                },
+                "relate3": [
+                  62569527726,
+                  62569527726
+                ],
+                "relate5": null,
+                "fartherId": 0,
+                "sortOrder": 732,
+                "subItems": []
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "message": ""
+}

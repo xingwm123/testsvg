@@ -18,7 +18,51 @@ export function createRoundAndLine(svg, rects) {
       // 绘制圆形
   rects.forEach(rect => {
     drawCircles(rect);
+    // 对于每个矩形，根据其relate5字段自动连接到其他矩形
+    if (rect.relate5 && rect.relate5.length > 0) {
+      rect.relate5.forEach(relatedId => {
+        const relatedRect = rects.find(r => r.id === relatedId);
+        if (relatedRect) {
+          drawAutoCurve(rect, relatedRect);
+        }
+      });
+    }
   });
+
+
+  function drawCircles(rect) {
+    let id = rect.id.replace("rect-", "");
+    svg.append('circle')
+      .attr('id', `circle-right-${id}`)
+      .attr('class', `circle circle-right-${id}`)
+      .attr('cx', rect.x + rect.width + 5)
+      .attr('cy', rect.y + rect.height / 2)
+      .attr('r', 5)
+      .attr('fill', 'red')
+      .call(d3.drag()
+        .on('start', dragStarted_cycle)
+        .on('drag', dragged_cycle)
+        .on('end', dragEnded_cycle));
+  }
+
+  function drawAutoCurve(startRect, endRect) {
+    const startX = startRect.x + startRect.width + 5;
+    const startY = startRect.y + startRect.height / 2;
+    const endX = endRect.x - arrowLength;
+    const endY = endRect.y + endRect.height / 2;
+    const pathData = `M ${startX},${startY} C ${startX + startHorizontalLength},${startY} ${endX - endHorizontalLength},${endY} ${endX},${endY}`;
+    let pathId = `path-auto-${startRect.id.replace("rect-", "")}-${endRect.id.replace("rect-", "")}`;
+    svg.append('path')
+      .attr('d', pathData)
+      .attr('id', pathId)
+      .attr('marker-end', 'url(#arrow)')
+      .style('fill', 'none')
+      .style('stroke', 'blue');
+    // 保存路径和关联的矩形信息
+    let startRectId = startRect.id.replace("rect-","");
+    let endRectId = endRect.id.replace("rect-","");
+    createPath(pathId, {id: startRectId, x: startX, y: startY}, {id: endRectId, x: endX, y: endY});
+  }
 
   function drawCircles(rect) {
     let id = rect.id.replace("rect-","")

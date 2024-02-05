@@ -2,9 +2,9 @@
 let currentRect = null;
 let currentPath = null;
 let pathAssociations = {};
+const coordinatesMap = new Map();
 
-
-// 导出一个对象，包含getter和setter函数，以便其他模块可以获取和设置这些变量
+// 导出一个对象，包含getter和setter函数，以及coordinatesMap的操作方法
 export const sharedState = {
   getCurrentRect: () => currentRect,
   setCurrentRect: (rect) => { currentRect = rect; },
@@ -12,15 +12,33 @@ export const sharedState = {
   setCurrentPath: (path) => { currentPath = path; },
   getPathAssociations: () => pathAssociations,
   setPathAssociation: (key, value) => {
-    // 可以在这里添加验证或其他逻辑
     pathAssociations[key] = value;
   },
   deletePathAssociation: (key) => {
-    // 删除指定的键
     delete pathAssociations[key];
   },
   clearPathAssociations: () => {
-    // 清空所有关联
     pathAssociations = {};
+  },
+  // 新增方法操作coordinatesMap
+  setCoordinates: (key, value) => {
+    coordinatesMap.set(key, value);
+  },
+  getCoordinates: (key) => {
+    return coordinatesMap.get(key);
+  },
+  deleteCoordinates: (key) => {
+    coordinatesMap.delete(key);
+  },
+  clearCoordinates: () => {
+    coordinatesMap.clear();
+  },
+  // 可选：获取整个Map的方法，如果需要的话
+  getAllCoordinates: () => {
+    return coordinatesMap;
+  },
+  // 在sharedState对象中添加
+  hasCoordinates: (key) => {
+    return coordinatesMap.has(key);
   }
 };
