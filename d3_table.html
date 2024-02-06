@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>D3.js Table and Y-Axis from JSON</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    .container {
+      display: flex;
+      align-items: flex-end;
+    }
+
+    table, th, td {
+      border: 1px solid black;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      padding: 8px;
+      text-align: left;
+    }
+
+    #y-axis svg {
+      background-color: #f9f9f9;
+    }
+
+    .axis path,
+    .axis line {
+      stroke: black;
+    }
+
+    .axis text {
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <table id="data-table">
+    <thead>
+    <tr><th>Name</th><th>Value</th></tr>
+    </thead>
+    <tbody>
+    <!-- Data rows will be inserted here -->
+    </tbody>
+  </table>
+  <div id="y-axis"></div>
+</div>
+
+<script>
+  // JSON data
+  var data = [
+    {"name": "Data A", "value": 100},
+    {"name": "Data B", "value": 200},
+    {"name": "Data C", "value": 300}
+  ];
+
+  // Generate table rows from data
+  var table = d3.select("#data-table tbody");
+  table.selectAll("tr")
+    .data(data)
+    .enter()
+    .append("tr")
+    .html(function(d) { return `<td>${d.name}</td><td>${d.value}</td>`; });
+
+  // Assuming the table row height and margins to calculate the overall height dynamically
+  var numberOfRows = data.length;
+  var rowHeight = 40; // Adjust based on your CSS or actual row height
+  var totalHeight = numberOfRows * rowHeight;
+
+  // Create SVG for Y-axis
+  var svg = d3.select("#y-axis").append("svg")
+    .attr("width", 60) // Adjust the width as needed
+    .attr("height", totalHeight);
+
+  var yScale = d3.scaleLinear()
+    .domain([0, d3.max(data, function(d) { return d.value; })]) // Dynamic domain based on data
+    .range([totalHeight, 0]);
+
+  var yAxis = d3.axisLeft(yScale).ticks(numberOfRows);
+
+  svg.append("g")
+    .attr("class", "axis")
+    .call(yAxis);
+</script>
+
+</body>
+</html>
