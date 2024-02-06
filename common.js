@@ -1,4 +1,4 @@
-// 初始化共享变量
+// 初始化共享变量111
 let currentRect = null;
 let currentPath = null;
 let pathAssociations = {};
