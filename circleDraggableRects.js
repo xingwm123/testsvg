@@ -1,6 +1,8 @@
 
 import { createRoundAndLine } from './createRoundAndLine.js'
 
+import { createRelevanceLine } from './relevanceLine.js'
+
 import { sharedState } from './common.js';
 
 
@@ -12,6 +14,7 @@ const arrowLength = 10; // 箭头长度的估计值，根据实际标记大小�
 
 let startHorizontalLength = 100; // 起点的水平长度
 let endHorizontalLength = 100; // 终点的水平长度
+
 
 export function createDraggableRects(svg, rects) {
 
@@ -25,8 +28,8 @@ export function createDraggableRects(svg, rects) {
     .attr('y', d => d.y)
     .attr('width', d => d.width)
     .attr('height', d => d.height)
-    .attr('fill', d => d.fill)
-    .attr('stroke', d => d.stroke)
+    .attr('fill', "green")
+    .attr('stroke', 'black')
     .on('mouseover', function (event, d) {
       // 在mouseover事件中将当前矩形对象赋给全局变量
       sharedState.setCurrentRect(d3.select(this));
@@ -41,6 +44,9 @@ export function createDraggableRects(svg, rects) {
 
     // 创建圆形
     createRoundAndLine(svg, rects);
+
+    createRelevanceLine(svg, rects);
+
 
 
     rectSelection.call(d3.drag()
@@ -61,17 +67,20 @@ export function createDraggableRects(svg, rects) {
           .attr('x', d.x)
           // .attr('y', d.y); // 这行被注释掉或移除，因为我们不更新y坐标
 
+           // 保存矩形的新位置到本地存储
+        localStorage.setItem(`${d.id}-x`, d.x);
+    
         // 更新关联圆形的位置
         let id = d.id.replace("rect-","");
         svg.selectAll(`.circle-right-${id}`)
           .attr('cx', d.x + d.width + 5) // 更新为矩形的右上角X坐标
           .attr('cy', d.y + d.height / 2); // Y坐标保持不变
-
+    
         // 更新当前拖动的矩形的位置
         d3.select(this)
           .attr('x', d.x = event.x)
           // .attr('y', d.y); // 同样，不更新y坐标
-
+    
         // 更新与当前矩形关联的活动矩形和拖拽控制点的位置
         svg.select(`#rect1-right-${id}`)
           .attr('x', d.x)
@@ -83,21 +92,35 @@ export function createDraggableRects(svg, rects) {
           }
         svg.select(`#polygon-right-${id}`)
           .attr("transform", "translate(" + (storedTriangleX) + ", " + (d.y + d.height) + ")");
-
+        
         d3.select(`#right-anchor-${id}`).attr("x", d.x + d.width - 3); // y坐标保持不变
         d3.select(`#left-anchor-${id}`).attr("x", d.x - 3); // 同上
-
+    
         updatePathPositions(id+"");
+
+        updateLinks()
     }
 
-
-
-
-
+     // 用来更新连接线的函数
+     function updateLinks() {
+      rects.forEach(rect => {
+        rect.subItemss.forEach(childId => {
+        const child = rects.find(n => n.id === childId);
+        if (child) {
+          const startX = rect.x + rect.width / 2;
+          const startY = rect.y + rect.height;
+          const endX = child.x;
+          const endY = child.y + child.height / 2;
+          const pathD = `M ${startX} ${startY} V ${endY} H ${endX}`;
+          svg.select(`#path-${rect.id}-${child.id}`).attr('d', pathD);
+        }
+      });
+    });
+    }
 
     function dragEnded(event, d) {
         d3.select(this).classed('active', false);
-
+      
       }
 
 
@@ -130,6 +153,7 @@ export function calculatePathD(startObject, endObject) {
   let pathData = `M ${startX},${startY} C ${startX+ startHorizontalLength},${startY} ${endX - endHorizontalLength},${endY} ${endX},${endY}`;
   return pathData;
 }
+
 
 export function updatePathPositions(objectId) {
   pathAssociations = sharedState.getPathAssociations();
