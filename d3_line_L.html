@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>D3.js Dragging Rectangles and Circles</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    svg {
+      border: 1px solid #ccc;
+    }
+    .drag-handle {
+      fill: #ccc; /* 三角形的填充颜色 */
+      cursor: pointer;
+      stroke: #999; /* 三角形的边框颜色 */
+      stroke-width: 2; /* 三角形的边框宽度 */
+    }
+    .active-rect {
+      fill: lightgreen; /* 活动进度的颜色 */
+      cursor: pointer;
+      rx: 10; /* 矩形的圆角 */
+      ry: 10;
+    }
+    .inactive-rect {
+      fill: #ddd; /* 非活动进度的颜色 */
+      cursor: pointer;
+      rx: 10;
+      ry: 10;
+    }
+  </style>
+</head>
+<body>
+<svg width="800" height="600"></svg>
+
+<script>
+  const nodes = [
+    { id: 'A', children: ['B', 'C'] ,x: 100, y: 100 },
+    { id: 'B', children: [] ,x: 200, y: 200},
+    { id: 'C', children: [] ,x: 200, y: 300 }
+  ];
+
+
+  // 设置 SVG
+  const svg = d3.select('svg');
+
+  // 定义每个节点的宽高
+  const nodeWidth = 100;
+  const nodeHeight = 50;
+
+  // 计算并绘制节点及其位置
+  nodes.forEach((node, index) => {
+    // 假设父节点A位于(100,100)，子节点根据父节点位置计算
+    const x = nodes[index].x; // 简单示例，实际中可能需要更复杂的位置计算
+    const y = nodes[index].y;
+
+    // 绘制矩形
+    svg.append('rect')
+      .attr('x', x)
+      .attr('y', y)
+      .attr('width', nodeWidth)
+      .attr('height', nodeHeight)
+      .attr('fill', 'lightgrey');
+
+    // 添加文本
+    svg.append('text')
+      .attr('x', x + nodeWidth / 2)
+      .attr('y', y + nodeHeight / 2)
+      .attr('dominant-baseline', 'middle')
+      .attr('text-anchor', 'middle')
+      .text(node.id);
+  });
+
+  // 绘制连接线
+  // 假定只连接A到B
+  const lineStartX = 100 + nodeWidth * (1 / 5); // 父节点的矩形下方线段上的靠左1/5的位置
+  const lineStartY = 100 + nodeHeight; // 父节点的矩形下方
+  const lineEndX = 200; // 子节点的矩形左边
+  const lineEndY = 200 + nodeHeight / 2; // 子节点矩形的中点
+
+  // 绘制L形线
+  svg.append('path')
+    .attr('d', `M${lineStartX},${lineStartY} V${lineEndY} H${lineEndX}`)
+    .attr('stroke', 'black')
+    .attr('fill', 'none');
+
+  const positions = {
+    'A': { x: 100, y: 100 },
+    'B': { x: 200, y: 200 },
+    'C': { x: 200, y: 300 } // C节点位置
+  };
+
+  const lineToCStartX = positions['A'].x + nodeWidth * (1 / 5);
+  const lineToCStartY = positions['A'].y + nodeHeight;
+  const lineToCEndX = positions['C'].x; // C节点的矩形左边
+  const lineToCEndY = positions['C'].y + nodeHeight / 2; // C节点矩形的中点
+
+  svg.append('path')
+    .attr('d', `M${lineToCStartX},${lineToCStartY} V${lineToCEndY} H${lineToCEndX}`)
+    .attr('stroke', 'black')
+    .attr('fill', 'none');
+
+
+</script>
+
+</body>
+</html>
