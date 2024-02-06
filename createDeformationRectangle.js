@@ -1,6 +1,6 @@
 
 
-import { updatePathPositions } from './circleDraggableRects.js'
+import { updatePathPositions, updateLinks } from './circleDraggableRects.js'
 
 
 export function createDeformationRectangle(svg, rects) {
@@ -66,6 +66,8 @@ export function createDeformationRectangle(svg, rects) {
             d3.selectAll(`.circle-right-${id}`)
               .attr('cx', rect.x + rect.width+8) // 更新为矩形的右上角X坐标
               .attr('cy', rect.y + rect.height / 2); // 更新为矩形的中点Y坐标
+
+              updateLinks(svg,rects)
         }
 
 }

@@ -98,24 +98,7 @@ export function createDraggableRects(svg, rects) {
     
         updatePathPositions(id+"");
 
-        updateLinks()
-    }
-
-     // 用来更新连接线的函数
-     function updateLinks() {
-      rects.forEach(rect => {
-        rect.subItemss.forEach(childId => {
-        const child = rects.find(n => n.id === childId);
-        if (child) {
-          const startX = rect.x + rect.width / 2;
-          const startY = rect.y + rect.height;
-          const endX = child.x;
-          const endY = child.y + child.height / 2;
-          const pathD = `M ${startX} ${startY} V ${endY} H ${endX}`;
-          svg.select(`#path-${rect.id}-${child.id}`).attr('d', pathD);
-        }
-      });
-    });
+        updateLinks(svg,rects)
     }
 
     function dragEnded(event, d) {
@@ -165,4 +148,22 @@ export function updatePathPositions(objectId) {
       d3.select('#' + pathId).attr('d', newPathD);
     }
   });
+}
+
+
+// 用来更新连接线的函数
+export function  updateLinks(svg,rects) {
+  rects.forEach(rect => {
+    rect.subItemss.forEach(childId => {
+    const child = rects.find(n => n.id === childId);
+    if (child) {
+      const startX = rect.x + rect.width / 2;
+      const startY = rect.y + rect.height;
+      const endX = child.x;
+      const endY = child.y + child.height / 2;
+      const pathD = `M ${startX} ${startY} V ${endY} H ${endX}`;
+      svg.select(`#path-${rect.id}-${child.id}`).attr('d', pathD);
+    }
+  });
+});
 }
