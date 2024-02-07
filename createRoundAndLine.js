@@ -136,14 +136,6 @@ export function createRoundAndLine(svg, rects) {
       }
     }
 
-    // 使用当前时间戳和Math.random()来生成一个唯一的随机数
-    function generateUniqueRandomNumber() {
-      return Date.now() + Math.floor(Math.random() * 1000000);
-    }
-    
-    // 调用函数生成唯一随机数
-    var uniqueRandomNumber = generateUniqueRandomNumber();
-
 
     // 构建路径数据字符串，包括起始和终止的水平长度调整
     const pathData = `M ${startX},${startY}

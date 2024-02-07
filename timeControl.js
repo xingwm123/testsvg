@@ -3,17 +3,17 @@ import { sharedState } from './common.js';
 
 import { initializeOrUpdateChart } from './initializeOrUpdateChart.js';
 
-export function timeControl(svg) {
+export function timeControl(svg , rects) {
 
   const margin = { top: 20, right: 20, bottom: 30, left: 20 };
   const width = +svg.attr('width') - margin.left - margin.right;
   const height = +svg.attr('height') - margin.top - margin.bottom;
   const container = document.querySelector('.svg-container');
-
+  let startDate, endDate, months, chineseLocale, chineseTimeFormat;
+  let xScale, xAxis;
   // 根据选中的视图类型更新图表
   function updateChart(viewType) {
-    let startDate, endDate, months, chineseLocale, chineseTimeFormat;
-    let xScale, xAxis;
+    
 
     // 先清除之前的图表内容
     svg.selectAll('*').remove();
@@ -97,6 +97,7 @@ export function timeControl(svg) {
           const todayPosition = xScale(today);
           container.scrollLeft = todayPosition - container.clientWidth / 2 + margin.left;
           updateCoordinates(); // 更新坐标
+          dateLine()
           initializeOrUpdateChart(false);
         });
 
@@ -108,6 +109,7 @@ export function timeControl(svg) {
           weekdrawAxis();
           container.scrollLeft -= 100;
           updateCoordinates(); // 更新坐标
+          dateLine()
           initializeOrUpdateChart(false);
         });
 
@@ -119,6 +121,7 @@ export function timeControl(svg) {
           weekdrawAxis();
           container.scrollLeft += 100;
           updateCoordinates(); // 更新坐标
+          dateLine()
           initializeOrUpdateChart(false);
         });
         weekdrawAxis();
@@ -203,6 +206,7 @@ export function timeControl(svg) {
           const todayPosition = xScale(today);
           container.scrollLeft = todayPosition - container.clientWidth / 2 + margin.left;
           updateCoordinates(); // 更新坐标
+          dateLine()
             initializeOrUpdateChart(false);
         });
 
@@ -213,6 +217,7 @@ export function timeControl(svg) {
           monthdrawAxis();
           container.scrollLeft -= 100;
           updateCoordinates(); // 更新坐标
+          dateLine()
             initializeOrUpdateChart(false);
         });
 
@@ -223,6 +228,7 @@ export function timeControl(svg) {
           monthdrawAxis();
           container.scrollLeft += 100;
           updateCoordinates(); // 更新坐标
+          dateLine()
             initializeOrUpdateChart(false);
         });
         monthdrawAxis();
@@ -233,7 +239,7 @@ export function timeControl(svg) {
         svg.selectAll('.year-month-label').remove(); // 移除已有的年月标签
 
         // 设置开始和结束日期以覆盖半年的时间
-        today = new Date();
+        const today = new Date();
         startDate = new Date(today.getFullYear(), today.getMonth() - 6, 1); // 半年前的第一天
         endDate = new Date(today.getFullYear(), today.getMonth() + 6, 0); // 半年后的最后一天
 
@@ -287,6 +293,7 @@ export function timeControl(svg) {
         document.getElementById('today-button').addEventListener('click', function () {
           container.scrollLeft = xScale(today) - container.offsetWidth / 2;
           updateCoordinates(); // 更新坐标
+          dateLine()
             initializeOrUpdateChart(false);
         });
 
@@ -297,6 +304,7 @@ export function timeControl(svg) {
           quarterdrawAxis();
           container.scrollLeft -= 100;
           updateCoordinates(); // 更新坐标
+          dateLine()
             initializeOrUpdateChart(false);
         });
 
@@ -307,6 +315,7 @@ export function timeControl(svg) {
           quarterdrawAxis();
           container.scrollLeft += 100;
           updateCoordinates(); // 更新坐标
+          dateLine()
             initializeOrUpdateChart(false);
         });
         quarterdrawAxis();
@@ -322,6 +331,61 @@ export function timeControl(svg) {
   });
 
 
+
+  function generateUniqueRandomNumber() {
+    return Date.now() + Math.floor(Math.random() * 1000000);
+  }
+  
+  // 调用函数生成唯一随机数
+  var uniqueRandomNumber = generateUniqueRandomNumber();
+
+  function dateLine() {
+    svg.selectAll('[id^="date-line-"]').remove();
+    const currentDate = new Date();
+    const currentXPosition = xScale(currentDate);
+
+    // 在SVG中添加红色垂直线
+    svg.append('line')
+      .attr('x1', currentXPosition)
+      .attr('x2', currentXPosition)
+      .attr('y1', 40)
+      .attr('y2', 800)
+      .attr('stroke', 'red')
+      .attr('stroke-width', 2)
+      .attr('id', `date-line-${uniqueRandomNumber}`); // 添加唯一ID
+  }
+
+  const currentDate = new Date();
+const currentXPosition = xScale(currentDate);
+svg.selectAll('[id^="date-line-"]').remove();
+// 在SVG中添加红色垂直线
+svg.append('line')
+  .attr('x1', currentXPosition)
+  .attr('x2', currentXPosition)
+  .attr('y1', 40)
+  .attr('y2', 800)
+  .attr('stroke', 'red')
+  .attr('stroke-width', 2)
+  .attr('id', `date-line-${uniqueRandomNumber}`); // 添加唯一ID
+
+  }
+  
+
+  // 绑定下拉框事件
+  document.getElementById('timeframe-select').addEventListener('change', function() {
+    svg.selectAll('*').remove();
+    svg.selectAll('g.axis').remove(); // 移除已有的坐标轴
+    svg.selectAll('.year-month-label').remove(); // 移除已有的年月标签
+    updateChart(this.value);
+    rects.forEach(rect => {
+      localStorage.removeItem(`${rect.id}-x`);
+    });
+    sharedState.clearCoordinates();
+    updateCoordinates(); // 更新坐标
+    initializeOrUpdateChart(false);
+  });
+
+
   function updateCoordinates() {
     sharedState.clearCoordinates(); // 清除之前的坐标
     const dates = d3.timeDay.range(startDate, endDate); // 生成开始日期和结束日期之间的每一天
@@ -331,20 +395,13 @@ export function timeControl(svg) {
       console.log(`Updating coordinates for key: ${d3.timeFormat("%Y-%m-%d")(date)}`, x);
     });
   }
-  }
 
-  // 绑定下拉框事件
-  document.getElementById('timeframe-select').addEventListener('change', function() {
-    svg.selectAll('*').remove();
-    svg.selectAll('g.axis').remove(); // 移除已有的坐标轴
-    svg.selectAll('.year-month-label').remove(); // 移除已有的年月标签
-    updateChart(this.value);
-    updateCoordinates(); // 更新坐标
-    initializeOrUpdateChart(false);
-  });
 
   // 页面加载后初始化图表
   document.addEventListener("DOMContentLoaded", function() {
     updateChart('day'); // 根据需要调整初始视图
   });
+
+
+  
 }

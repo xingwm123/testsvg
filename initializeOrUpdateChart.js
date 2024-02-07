@@ -15,7 +15,7 @@ export function initializeOrUpdateChart(isCreate) {
         "number": "730",
         "name": "Ivy",
         "startDate": "2024-02-05",
-        "dueDate": "2024-02-20",
+        "dueDate": "2024-02-6",
         "owner": "陈二kaAm",
         "status": {
           "id": 62568939426,
@@ -76,8 +76,8 @@ export function initializeOrUpdateChart(isCreate) {
                 "id": "62569570949",
                 "number": "732",
                 "name": "Frank",
-                "startDate": "2024-02-07",
-                "dueDate": "2024-02-09",
+                "startDate": "2024-02-11",
+                "dueDate": "2024-02-13",
                 "owner": "陈二kaAm",
                 "status": {
                   "id": 62568939426,
@@ -99,8 +99,8 @@ export function initializeOrUpdateChart(isCreate) {
                 "id": "625695709455",
                 "number": "732",
                 "name": "Bob",
-                "startDate": "2024-02-07",
-                "dueDate": "2024-02-09",
+                "startDate": "2024-02-13",
+                "dueDate": "2024-02-19",
                 "owner": "陈二kaAm",
                 "status": {
                   "id": 62568939426,
@@ -183,7 +183,7 @@ const flattenedTasks = flattenTasks(dataSource);
     // 创建坐标轴
     // createTimeAxes(svg, scaleTime);
     if(isCreate){
-        timeControl(svg);
+        timeControl(svg,flattenedTasks);
     };
     
 
@@ -199,7 +199,7 @@ const flattenedTasks = flattenTasks(dataSource);
       if (coordinates) {
         // 如果找到了坐标，就在原始rect对象上设置x和y
         if (storedX == null) {
-          rect.x = coordinates.x;
+          rect.x = coordinates.x + 22;
         }
         rect.width = coordinates.width;
         // if (storedWidth != null) {
