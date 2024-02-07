@@ -123,7 +123,7 @@ export function initializeOrUpdateChart(isCreate) {
       }
     ]
 
-let yOffset = 0; // 初始化一个偏移量变量
+let yOffset = 40; // 初始化一个偏移量变量
     // 将嵌套数据结构转换成扁平化的数组
 function flattenTasks(data) {
   let result = [];
@@ -139,7 +139,7 @@ function flattenTasks(data) {
     
     rest.width = null;
     rest.height = null;
-    yOffset = yOffset + 100; // 更新偏移量，为下一个矩形准备
+    yOffset = yOffset + 48; // 更新偏移量，为下一个矩形准备
     rest.y = yOffset;
     //fill: 'green', stroke: 'black'
     rest.green = 'green';
@@ -199,13 +199,13 @@ const flattenedTasks = flattenTasks(dataSource);
       if (coordinates) {
         // 如果找到了坐标，就在原始rect对象上设置x和y
         if (storedX == null) {
-          rect.x = coordinates.x + 22;
+          rect.x = coordinates.x;
         }
         rect.width = coordinates.width;
         // if (storedWidth != null) {
         //   rect.width = storedWidth;
         // }
-        rect.height = 75;
+        rect.height = 40;
         return true; // 保留这个矩形数据
       } else {
         return false; // 过滤掉这个矩形数据

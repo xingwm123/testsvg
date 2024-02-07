@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>D3.js Dragging Rectangles and Circles</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    svg {
+      border: 1px solid #ccc;
+    }
+    .drag-handle {
+      fill: #ccc; /* 三角形的填充颜色 */
+      cursor: pointer;
+      stroke: #999; /* 三角形的边框颜色 */
+      stroke-width: 2; /* 三角形的边框宽度 */
+    }
+    .active-rect {
+      fill: lightgreen; /* 活动进度的颜色 */
+      cursor: pointer;
+      rx: 10; /* 矩形的圆角 */
+      ry: 10;
+    }
+    /* 样式定义左侧容器 */
+    .left-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 10%; /* 左侧容器宽度为右侧的一半 */
+      height: 100vh; /* 高度与右侧容器相同 */
+      overflow-y: hidden; /* 隐藏垂直滚动条 */
+      background-color: lightgray; /* 左侧容器背景颜色，可根据需要修改 */
+    }
+    table {
+      width: 100%; /* 表格宽度填满容器 */
+      border-collapse: collapse; /* 移除表格和单元格之间的间距 */
+    }
+    
+    th, td {
+      border: 1px solid black; /* 单元格边框 */
+    }
+    /* 左侧单元格样式 */
+    .left-cell {
+      text-align: center; /* 文本左对齐 */
+      padding: 5px; /* 文本与单元格边界的距离 */
+      height: 70px; /* 单元格的高度 */
+      white-space: nowrap; /* 确保文本不会换行 */
+    }
+    /* 修改右侧容器样式 */
+    .right-container {
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: 90%; /* 右侧容器宽度为左侧的一半 */
+      height: 100vh; /* 高度与左侧容器相同 */
+      overflow-y: auto; /* 允许右侧容器垂直滚动 */
+    }
+    .placeholder {
+      display: none; /* 隐藏或移除这个元素，因为它可能会占据顶部空间 */
+    }
+    .drag-handle {
+      fill: #ccc; /* 三角形的填充颜色 */
+      cursor: pointer;
+      stroke: #999; /* 三角形的边框颜色 */
+      stroke-width: 2; /* 三角形的边框宽度 */
+    }
+    .active-rect {
+      fill: lightgreen; /* 222活动进度的颜色 */
+      cursor: pointer;
+      rx: 10; /* 111矩形的圆角 */
+      ry: 10;
+    }
+    .axis path,
+    .axis line {
+      fill: none;
+      stroke: black;
+      shape-rendering: crispEdges;
+    }
+    .axis text {
+      font-family: sans-serif;
+      font-size: 10px;
+    }
+    .weekend-text {
+      fill: lightgrey;
+    }
+    .svg-container {
+      position: relative;
+      width: 100%;
+      overflow-x: scroll; /* 这使得容器在水平方向上可滚动 */
+      white-space: nowrap; /* 这确保了所有的内容都在一行内，从而可能导致滚动 */
+    }
+    .control-button {
+      cursor: pointer;
+      padding: 5px 10px;
+      margin: 5px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      background-color: #f9f9f9;
+      font-size: 12px;
+      position: fixed;
+      top: 10px;
+      z-index: 10;
+    }
+    #today-button {
+      right: 50px;
+    }
+    #scroll-left {
+      right: 100px;
+    }
+    #scroll-right {
+      right: 10px;
+    }
+    .dropdown {
+      position: fixed;
+      top: 17px; /* 与按钮的顶部对齐 */
+      right: 150px; /* 与页面右侧保持一定的距离 */
+      z-index: 1000; /* 确保下拉框在最上面 */
+    }
+    /* 可能需要添加的额外样式来美化下拉框 */
+    select {
+      padding: 5px 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      background-color: #f9f9f9;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+<!-- 左侧容器 -->
+<div class="left-container">
+  <div class="placeholder"></div> <!-- 添加占位的空白元素 -->
+  <table border="1">
+    <tr>
+      <th class="left-cell">任务名称</th>
+      <th class="left-cell">任务状态</th>
+    </tr>
+    <!-- 添加更多任务行 -->
+  </table>
+</div>
+<div class="right-container">
+  <div class="svg-container">
+    <svg width="2000" height="800"></svg>
+  </div>
+  
+  
+  
+  <div id="scroll-left" class="control-button">&#9664;</div>
+  <div id="today-button" class="control-button">今天</div>
+  <div id="scroll-right" class="control-button">&#9654;</div>
+  
+  <div class="dropdown">
+    <select id="timeframe-select">
+      <option value="week">周</option>
+      <option value="month">月</option>
+      <option value="quarter">季度</option>
+    </select>
+  </div>
+  
+  <svg width="1" height="1">
+    <defs>
+      <marker id="arrow" markerWidth="10" markerHeight="10" refX="0" refY="3" orient="auto" markerUnits="strokeWidth">
+        <path d="M0,0 L0,6 L9,3 z" fill="blue"></path>
+      </marker>
+    </defs>
+  </svg>
+</div>
+<script type="module" src="js/main copy.js"></script>
+<script type="module">
+  
+  // 您的数据源
+  const dataSource =[
+      {
+        "id": "62569485938",
+        "number": "730",
+        "name": "一级任务",
+        "startDate": "2024-02-05",
+        "dueDate": "2024-02-6",
+        "owner": "陈二kaAm",
+        "status": {
+          "id": 62568939426,
+          "name": "待办",
+          "type": 10,
+          "value": "#F1F0F0"
+        },
+        "relate3": null,
+        "relate5": [
+          62569527726
+        ],
+        "fartherId": 0,
+        "sortOrder": 730,
+        "subItems": [
+          {
+            "id": "62569527726",
+            "number": "731",
+            "name": "二级任务",
+            "startDate": "2024-02-06",
+            "dueDate": "2024-02-08",
+            "owner": "陈二kaAm",
+            "status": {
+              "id": 62568939426,
+              "name": "待办",
+              "type": 10,
+              "value": "#F1F0F0"
+            },
+            "relate3": [
+              62569485938
+            ],
+            "relate5": [
+              62569570942
+            ],
+            "fartherId": 0,
+            "sortOrder": 731,
+            "subItems": [
+              {
+                "id": "62569570942",
+                "number": "732",
+                "name": "三级任务",
+                "startDate": "2024-02-07",
+                "dueDate": "2024-02-09",
+                "owner": "陈二kaAm",
+                "status": {
+                  "id": 62568939426,
+                  "name": "待办",
+                  "type": 10,
+                  "value": "#F1F0F0"
+                },
+                "relate3": [
+                  62569527726,
+                  62569527726
+                ],
+                "relate5": null,
+                "fartherId": 0,
+                "sortOrder": 732,
+                "subItems": [{
+                "id": "62569570949",
+                "number": "732",
+                "name": "四级任务",
+                "startDate": "2024-02-11",
+                "dueDate": "2024-02-13",
+                "owner": "陈二kaAm",
+                "status": {
+                  "id": 62568939426,
+                  "name": "待办",
+                  "type": 10,
+                  "value": "#F1F0F0"
+                },
+                "relate3": [
+                  62569527726,
+                  62569527726
+                ],
+                "relate5": null,
+                "fartherId": 0,
+                "sortOrder": 732,
+                "subItems": []
+              }]
+              },
+              {
+                "id": "625695709455",
+                "number": "732",
+                "name": "五级任务",
+                "startDate": "2024-02-13",
+                "dueDate": "2024-02-19",
+                "owner": "陈二kaAm",
+                "status": {
+                  "id": 62568939426,
+                  "name": "待办",
+                  "type": 10,
+                  "value": "#F1F0F0"
+                },
+                "relate3": [
+                  62569527726,
+                  62569527726
+                ],
+                "relate5": null,
+                "fartherId": 0,
+                "sortOrder": 732,
+                "subItems": []
+              }
+            ]
+          }
+        ]
+      }
+    ]
+
+  // 获取表格元素
+  const table = document.querySelector("table");
+
+  // 递归遍历JSON数据并在表格中显示任务名称和任务状态
+  function displayData(data) {
+    data.forEach(item => {
+      const row = table.insertRow();
+      const cell1 = row.insertCell(0);
+      const cell2 = row.insertCell(1);
+
+      // 设置单元格内容
+      cell1.textContent = item.name;
+      cell2.textContent = item.status.name; // 可以根据需要选择其他数据字段
+
+      // 设置单元格的高度
+      cell1.style.height =  "45px";
+      cell2.style.height =  "45px";
+
+      // 递归处理子任务
+      if (item.subItems) {
+        displayData(item.subItems);
+      }
+    });
+  }
+
+  // 调用递归函数开始显示数据
+  displayData(dataSource);
+
+  // 获取表格元素
+const table1 = document.querySelector("table");
+// 获取表格的高度
+const tableHeight = table1.offsetHeight;
+// 获取SVG元素
+const svg = document.querySelector("svg");
+// 根据表格的高度来设置SVG的高度，并添加额外的10像素
+svg.setAttribute("height", tableHeight + 10);
+
+</script>
+</body>
+</html>

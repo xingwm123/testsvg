@@ -9,6 +9,7 @@ export function timeControl(svg , rects) {
   const width = +svg.attr('width') - margin.left - margin.right;
   const height = +svg.attr('height') - margin.top - margin.bottom;
   const container = document.querySelector('.svg-container');
+  const xAxisYPosition = margin.top + 60; // 定义x轴的垂直位置+10
   let startDate, endDate, months, chineseLocale, chineseTimeFormat;
   let xScale, xAxis;
   // 根据选中的视图类型更新图表
@@ -48,7 +49,7 @@ export function timeControl(svg , rects) {
           .tickFormat(chineseTimeFormat); // 使用中文格式化函数
         svg.append('g')
           .attr('class', 'axis')
-          .attr('transform', `translate(0,${margin.top+40})`)
+          .attr('transform', `translate(0,${xAxisYPosition})`)
           .call(xAxis);
 
 // 添加月份标签
@@ -57,7 +58,7 @@ export function timeControl(svg , rects) {
           svg.append('text')
             .attr('class', 'month-label')
             .attr('x', xScale(month))
-            .attr('y', margin.top) // 适当调整y坐标值
+            .attr('y', margin.top+35) // 适当调整y坐标值
             .text(chineseLocale.format('%Y年%m月')(month)); // 使用中文格式化函数
         });
         // 绘制轴和月份标签的函数
@@ -73,7 +74,7 @@ export function timeControl(svg , rects) {
         // 绘制新的轴
         const gX = svg.append('g')
           .attr('class', 'axis')
-          .attr('transform', `translate(${margin.left},${margin.top + 40})`)
+          .attr('transform', `translate(0,${xAxisYPosition})`)
           .call(xAxis);
 
         // 设置周末日期的文本颜色
@@ -87,7 +88,7 @@ export function timeControl(svg , rects) {
           svg.append('text')
             .attr('class', 'month-label')
             .attr('x', xScale(month))
-            .attr('y', margin.top)
+            .attr('y', margin.top+35)
             .text(chineseLocale.format('%Y年%m月')(month));
         });
       }
@@ -150,7 +151,7 @@ export function timeControl(svg , rects) {
         // 添加x轴到SVG，并设置周末刻度文字颜色
         const gXMonth = svg.append('g')
           .attr('class', 'axis')
-          .attr('transform', `translate(${margin.left},${margin.top+40})`)
+          .attr('transform', `translate(0,${xAxisYPosition})`)
           .call(xAxis);
 
         gXMonth.selectAll('.tick text')
@@ -162,7 +163,7 @@ export function timeControl(svg , rects) {
           gXMonth.append('text')
             .attr('class', 'month-label')
             .attr('x', xScale(month))
-            .attr('y', margin.top) // 确保这个值将标签放在视图内
+            .attr('y', margin.top+35) // 确保这个值将标签放在视图内
             .text(d3.timeFormat('%Y年%m月')(month));
         });
 
@@ -181,7 +182,7 @@ export function timeControl(svg , rects) {
         // Create new axis
         const gX = svg.append('g')
           .attr('class', 'axis')
-          .attr('transform', `translate(${margin.left},${axisTopMargin})`)
+          .attr('transform', `translate(0,${xAxisYPosition})`)
           .call(xAxis);
 
         // Set the color for weekend text labels
@@ -195,7 +196,7 @@ export function timeControl(svg , rects) {
           svg.append('text')
             .attr('class', 'month-label')
             .attr('x', xScale(month))
-            .attr('y', margin.top - 10) // Adjust this value to move label above the axis
+            .attr('y', margin.top+35) // Adjust this value to move label above the axis
             .text(d3.timeFormat('%Y年%m月')(month));
         });
       }
@@ -263,17 +264,18 @@ export function timeControl(svg , rects) {
           return d.getUTCDay() === 1;
         });
 
-        const xAxis = d3.axisBottom(xScale)
+        const xAxis = d3.axisTop(xScale)
           .tickSizeInner(6)
           .tickSizeOuter(0)
-          .tickPadding(10)
+          .tickPadding(6)
           .tickValues(everySevenDays) // 使用每7天的刻度值
           .tickFormat(d3.timeFormat('%-d')); // 仅格式化日期
 
         const gX = svg.append('g')
-          .attr('class', 'axis')
-          .attr('transform', `translate(0, ${height - 40})`)
-          .call(xAxis);
+        .attr('class', 'axis')
+        .attr('transform', `translate(0,${xAxisYPosition})`)
+        .call(xAxis);
+
 
         // 添加年月标签
         const firstDayOfMonths = xScale.ticks(d3.timeMonth);
@@ -281,7 +283,7 @@ export function timeControl(svg , rects) {
           svg.append('text')
             .attr('class', 'year-month-label')
             .attr('x', xScale(firstDayOfMonth))
-            .attr('y', margin.top + 40) // 适当调整y坐标值，使标签出现在时间轴上方
+            .attr('y', margin.top+35) // 适当调整y坐标值，使标签出现在时间轴上方
             .text(d3.timeFormat('%Y年%m月')(firstDayOfMonth))
             .attr('text-anchor', 'middle'); // 文本居中对齐
         });
@@ -342,28 +344,28 @@ export function timeControl(svg , rects) {
   function dateLine() {
     svg.selectAll('[id^="date-line-"]').remove();
     const currentDate = new Date();
-    const currentXPosition = xScale(currentDate);
+    const endX = sharedState.getCoordinates(d3.timeFormat("%Y-%m-%d")(currentDate))?.x;
 
     // 在SVG中添加红色垂直线
     svg.append('line')
-      .attr('x1', currentXPosition)
-      .attr('x2', currentXPosition)
-      .attr('y1', 40)
-      .attr('y2', 800)
+      .attr('x1', endX)
+      .attr('x2', endX)
+      .attr('y1', 71)
+      .attr('y2', 2000)
       .attr('stroke', 'red')
       .attr('stroke-width', 2)
       .attr('id', `date-line-${uniqueRandomNumber}`); // 添加唯一ID
   }
 
   const currentDate = new Date();
-const currentXPosition = xScale(currentDate);
+  const endX = sharedState.getCoordinates(d3.timeFormat("%Y-%m-%d")(currentDate))?.x;
 svg.selectAll('[id^="date-line-"]').remove();
 // 在SVG中添加红色垂直线
 svg.append('line')
-  .attr('x1', currentXPosition)
-  .attr('x2', currentXPosition)
-  .attr('y1', 40)
-  .attr('y2', 800)
+  .attr('x1', endX)
+  .attr('x2', endX)
+  .attr('y1', 80)
+  .attr('y2', 2000)
   .attr('stroke', 'red')
   .attr('stroke-width', 2)
   .attr('id', `date-line-${uniqueRandomNumber}`); // 添加唯一ID
