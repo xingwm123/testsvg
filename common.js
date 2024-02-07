@@ -2,6 +2,8 @@
 let currentRect = null;
 let currentPath = null;
 let pathAssociations = {};
+let elementAll = [];
+let paths = [];
 const coordinatesMap = new Map();
 
 // 导出一个对象，包含getter和setter函数，以及coordinatesMap的操作方法
@@ -40,5 +42,41 @@ export const sharedState = {
   // 在sharedState对象中添加
   hasCoordinates: (key) => {
     return coordinatesMap.has(key);
+  },
+  setElement: (value) => {
+    elementAll.push(value);
+  },
+  getElement: (index) => {
+    return elementAll[index];
+  },
+  deleteElement: (index) => {
+    if (index >= 0 && index < elementAll.length) {
+      elementAll.splice(index, 1);
+    }
+  },
+  clearElements: () => {
+    elementAll = [];
+  },
+  // 获取整个elementAll数组的方法
+  getAllElements: () => {
+    return elementAll;
+  },
+  setPaths: (value) => {
+    paths.push(value);
+  },
+  getPaths: (index) => {
+    return paths[index];
+  },
+  deletePaths: (index) => {
+    if (index >= 0 && index < paths.length) {
+      paths.splice(index, 1);
+    }
+  },
+  clearPaths: () => {
+    paths = [];
+  },
+  // 获取整个elementAll数组的方法
+  getAllPaths: () => {
+    return paths;
   }
 };

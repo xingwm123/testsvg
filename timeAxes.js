@@ -143,6 +143,7 @@ export function createTimeAxes(svg, scaleTime) {
 
 
 export function  getCoordinates(name, date, end) {
+  const y1 = sharedState.getAllCoordinates()
   // 将开始和结束日期字符串转换为Date对象
   const startDate = new Date(date);
   const endDate = new Date(end);
@@ -157,7 +158,7 @@ export function  getCoordinates(name, date, end) {
   // 获取名字对应的y坐标
   const y = sharedState.getCoordinates(name)?.y;
 
-  if (width !== null && y !== undefined) {
+  if (width !== null) {
     // 如果找到了对应的x坐标和y坐标，返回它们以及计算出的宽度
     return { x: startX, y, width };
   } else {

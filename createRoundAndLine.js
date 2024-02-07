@@ -17,6 +17,12 @@ export function createRoundAndLine(svg, rects) {
 
       // 绘制圆形
   rects.forEach(rect => {
+    let id = rect.id.replace("rect-", "");
+    sharedState.setElement(`rect-${id}`);
+    sharedState.setElement(`rect1-right-${id}`);
+    sharedState.setElement(`polygon-right-${id}`);
+    sharedState.setElement(`right-anchor-${id}`);
+    sharedState.setElement(`left-anchor-${id}`);
     drawCircles(rect);
     // 对于每个矩形，根据其relate5字段自动连接到其他矩形
     if (rect.relate5 && rect.relate5.length > 0) {
@@ -43,6 +49,7 @@ export function createRoundAndLine(svg, rects) {
         .on('start', dragStarted_cycle)
         .on('drag', dragged_cycle)
         .on('end', dragEnded_cycle));
+      sharedState.setElement(`circle-right-${id}`);
   }
 
   function drawAutoCurve(startRect, endRect) {
@@ -58,27 +65,13 @@ export function createRoundAndLine(svg, rects) {
       .attr('marker-end', 'url(#arrow)')
       .style('fill', 'none')
       .style('stroke', 'blue');
+      sharedState.setElement(`${pathId}`);
     // 保存路径和关联的矩形信息
     let startRectId = startRect.id.replace("rect-","");
     let endRectId = endRect.id.replace("rect-","");
     createPath(pathId, {id: startRectId, x: startX, y: startY}, {id: endRectId, x: endX, y: endY});
   }
 
-  function drawCircles(rect) {
-    let id = rect.id.replace("rect-","")
-    // // 右侧圆形（位于右侧中点）
-    svg.append('circle')
-      .attr('id',`circle-right-${id}`)
-      .attr('class', `circle circle-right-${id}`)
-      .attr('cx', rect.x + rect.width+5) // 设置为矩形的右上角X坐标
-      .attr('cy', rect.y + rect.height / 2) // 设置为矩形的中点Y坐标
-      .attr('r', 5)
-      .attr('fill', 'red')
-      .call(d3.drag()
-      .on('start', dragStarted_cycle) // 定义开始拖拽的行为
-      .on('drag', dragged_cycle)
-      .on('end', dragEnded_cycle));
-  }
 
 
   function dragStarted_cycle(event) {
@@ -143,17 +136,25 @@ export function createRoundAndLine(svg, rects) {
       }
     }
 
+    // 使用当前时间戳和Math.random()来生成一个唯一的随机数
+    function generateUniqueRandomNumber() {
+      return Date.now() + Math.floor(Math.random() * 1000000);
+    }
+    
+    // 调用函数生成唯一随机数
+    var uniqueRandomNumber = generateUniqueRandomNumber();
+
 
     // 构建路径数据字符串，包括起始和终止的水平长度调整
     const pathData = `M ${startX},${startY}
                       C ${startX + startHorizontalLength},${startY} ${endX - endHorizontalLength},${endY} ${endX},${endY}`;
-
     currentPath.attr('d', pathData)
       .attr('marker-end', 'url(#arrow)')
       .attr("startX",startX)
       .attr("startY",startY)
       .attr("endX",endX)
       .attr("endY",endY);
+      sharedState.setPaths(currentPath);
 
 
 

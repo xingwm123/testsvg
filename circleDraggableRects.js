@@ -119,22 +119,27 @@ export function calculatePathD(startObject, endObject) {
   let startid = startObject.id;
   let endid = endObject.id;
   let start2 = d3.select("#circle-right-"+startid);
-  // let end2 = d3.select("#rect"+endid);
+  if (!start2.empty()) {
+    // let end2 = d3.select("#rect"+endid);
   //startObject = {"id":startid,"x":start2.attr("x"),"y":start2.attr("y")}
   //endObject = {"id":endid,"x":end2.attr("x"),"y":end2.attr("y")}
 
   let startX = parseInt(start2.attr('cx')),
-    startY = parseInt(start2.attr('cy'));
+  startY = parseInt(start2.attr('cy'));
 
-  let endRect = d3.select("#rect-"+endid);
-  const rect2X = parseInt(endRect.attr('x')),
-    rect2Y = parseInt(endRect.attr('y')),
-    rect2Height = parseInt(endRect.attr('height'));
-  let endX = rect2X - arrowLength; // 考虑箭头长度的调整
-  let endY = rect2Y + rect2Height / 2;
+let endRect = d3.select("#rect-"+endid);
+const rect2X = parseInt(endRect.attr('x')),
+  rect2Y = parseInt(endRect.attr('y')),
+  rect2Height = parseInt(endRect.attr('height'));
+let endX = rect2X - arrowLength; // 考虑箭头长度的调整
+let endY = rect2Y + rect2Height / 2;
 
-  let pathData = `M ${startX},${startY} C ${startX+ startHorizontalLength},${startY} ${endX - endHorizontalLength},${endY} ${endX},${endY}`;
-  return pathData;
+let pathData = `M ${startX},${startY} C ${startX+ startHorizontalLength},${startY} ${endX - endHorizontalLength},${endY} ${endX},${endY}`;
+return pathData;
+  }else{
+    console.log("--------------------------------------------------------------------------------------start2 is empty");
+  }
+  
 }
 
 

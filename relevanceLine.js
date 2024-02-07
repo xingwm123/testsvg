@@ -1,4 +1,5 @@
 
+import { sharedState } from './common.js';
 
 
 export function createRelevanceLine(svg, rects) {
@@ -22,6 +23,7 @@ export function createRelevanceLine(svg, rects) {
                     .attr('stroke-width', 2) // 加粗线条，数值越大线条越粗
                     .attr('fill', 'none')
                     .attr('id', `path-${rect.id}-${child.id}`);
+                    sharedState.setElement(`path-${rect.id}-${child.id}`);
                 }
               });
         }
