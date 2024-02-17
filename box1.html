@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>ScrollWidth, ClientWidth, OffsetWidth Demo</title>
+<style>
+  .container {
+    width: 200px; /* 容器宽度 */
+    height: 150px; /* 容器高度 */
+    border: 15px solid red; /* 边框 */
+    padding: 23px; /* 内边距 */
+    overflow: auto; /* 添加滚动条 */
+    margin: 18px; /* 外边距，对这些属性没有影响，但有助于视觉上的分隔 */
+  }
+  .content {
+    width: 500px; /* 内容宽度，确保超出容器 */
+    height: 200px; /* 内容高度，确保超出容器 */
+    background-color: lightblue; /* 背景色，以便看到内容区域 */
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="content">内容区域</div>
+</div>
+
+<script>
+  // JavaScript 用于显示属性值
+  const container = document.querySelector('.container');
+  console.log(`scrollWidth: ${container.scrollWidth}`);
+  console.log(`clientWidth: ${container.clientWidth}`);
+  console.log(`offsetWidth: ${container.offsetWidth}`);
+
+  // 在页面上直接显示这些值
+  document.body.insertAdjacentHTML('beforeend', `<p>scrollWidth: ${container.scrollWidth}px</p>`);
+  document.body.insertAdjacentHTML('beforeend', `<p>clientWidth: ${container.clientWidth}px</p>`);
+  document.body.insertAdjacentHTML('beforeend', `<p>offsetWidth: ${container.offsetWidth}px</p>`);
+  
+  
+
+</script>
+
+</body>
+</html>

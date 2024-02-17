@@ -4,7 +4,10 @@ let currentPath = null;
 let pathAssociations = {};
 let elementAll = [];
 let paths = [];
+let xScale = null;
 const coordinatesMap = new Map();
+
+let relatedElements = {};
 
 // 导出一个对象，包含getter和setter函数，以及coordinatesMap的操作方法
 export const sharedState = {
@@ -28,6 +31,21 @@ export const sharedState = {
   },
   getCoordinates: (key) => {
     return coordinatesMap.get(key);
+  },
+  setxScale: (scale) => {
+    xScale = scale;
+  },
+  getxScale: () => {
+    return xScale;
+  },
+  setRelatedElements: (key,value) => {
+    relatedElements[key] = value;
+  },
+  getRelatedElements: (key) => {
+    return relatedElements[key];
+  },
+  deleteRelatedElements: (key) => {
+    delete relatedElements[key];
   },
   deleteCoordinates: (key) => {
     coordinatesMap.delete(key);
@@ -78,5 +96,17 @@ export const sharedState = {
   // 获取整个elementAll数组的方法
   getAllPaths: () => {
     return paths;
+  },
+
+  totalDay: (viewtype) => {
+    let plus = 0;
+    if(viewtype=== 'quarter'){
+      plus = 90;
+    }else if(viewtype === 'month'){
+      plus = 30;
+    }else if(viewtype === 'week'){
+      plus = 10;
+    }
+    return plus;
   }
 };

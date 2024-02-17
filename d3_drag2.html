@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>矩形的拖动与宽度调整</title>
-  <script src="https://d3js.org/d3.v6.min.js"></script>
+  <script src="./lib/d3.v7.min.js"></script>
 </head>
 <body>
 <svg width="800" height="600" style="border: 1px solid black;"></svg>
@@ -22,20 +22,39 @@
 
   // 创建左右锚点感应区域
   var leftAnchorArea = svg.append("rect")
-    .attr("x", initialX - 3)
+    .attr("x", initialX )
     .attr("y", initialY)
-    .attr("width", 6)
+    .attr("width", 10)
     .attr("height", rectHeight)
     .style("fill", "black")
-    .style("cursor", "ew-resize");
+    .style("display", "none")
+    // .style("cursor", "ew-resize");
+
+  // var leftTransparentAnchorArea = svg.append("rect")
+  //   .attr("x", initialX - 20)
+  //   .attr("y", initialY)
+  //   .attr("width", 20)
+  //   .attr("height", rectHeight)
+  //   .style("fill", "transparent")
+  //   .style("cursor", "ew-resize");
+
 
   var rightAnchorArea = svg.append("rect")
-    .attr("x", initialX + rectWidth - 3)
+    .attr("x", initialX + rectWidth -10)
     .attr("y", initialY)
-    .attr("width", 6)
+    .attr("width", 10)
     .attr("height", rectHeight)
     .style("fill", "black")
-    .style("cursor", "ew-resize");
+    .style("display", "none")
+    // .style("cursor", "ew-resize");
+
+  // var rightTransparentAnchorArea = svg.append("rect")
+  //   .attr("x", initialX + rectWidth)
+  //   .attr("y", initialY)
+  //   .attr("width", 20)
+  //   .attr("height", rectHeight)
+  //   .style("fill", "transparent")
+  //   .style("cursor", "ew-resize");
 
   // 更新锚点位置
   function updateAnchorPositions() {
@@ -78,6 +97,42 @@
   rect.call(dragRect);
   leftAnchorArea.call(dragLeftAnchor);
   rightAnchorArea.call(dragRightAnchor);
+
+  rect.on("mouseover", function() {
+    leftAnchorArea.style("display", "block");
+    // leftAnchorArea.style("cursor", "ew-resize");
+    rightAnchorArea.style("display", "block");
+    // rightAnchorArea.style("cursor", "ew-resize");
+  })
+    .on("mouseout", function() {
+      leftAnchorArea.style("display", "none");
+      rightAnchorArea.style("display", "none");
+    });
+
+  leftAnchorArea.on("mouseover", function() {
+    leftAnchorArea.style("display", "block");
+    // leftAnchorArea.style("cursor", "ew-resize");
+    rightAnchorArea.style("display", "block");
+    // rightAnchorArea.style("cursor", "ew-resize");
+  })
+    .on("mouseout", function() {
+      leftAnchorArea.style("display", "none");
+      rightAnchorArea.style("display", "none");
+    });
+
+  rightAnchorArea.on("mouseover", function() {
+    leftAnchorArea.style("display", "block");
+     leftAnchorArea.style("cursor", "ew-resize");
+    rightAnchorArea.style("display", "block");
+     rightAnchorArea.style("cursor", "ew-resize");
+  })
+    .on("mouseout", function() {
+      leftAnchorArea.style("display", "none");
+      rightAnchorArea.style("display", "none");
+    });
+
+  // leftTransparentAnchorArea.call(dragLeftAnchor);
+  // rightTransparentAnchorArea.call(dragRightAnchor);
 
 
 </script>

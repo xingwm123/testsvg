@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>D3.js Dragging Rectangles and Circles</title>
-  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="./lib/d3.v7.min.js"></script>
   <style>
     svg {
       border: 1px solid #ccc;
@@ -189,7 +189,7 @@ function drawCircles(rect) {
 }
 
 rects.forEach(rect => {
-  
+
   console.log("rect.id="+rect.id)
   let id = rect.id.replace("rect-","")
   // 初始化绿色圆角矩形（已完成部分）
@@ -213,13 +213,13 @@ rects.forEach(rect => {
     function dragMove(event, rect) {
       var pointer = d3.pointer(event, svg.node());
       var x = pointer[0];
-    
+
       // 限制拖动范围在矩形内
       x = Math.max(rect.x, Math.min(rect.x + rect.width, x));
-    
+
       // 更新三角形的位置
       dragHandle.attr("transform", "translate(" + (x - 6) + ", " + (rect.y + rect.height) + ")");
-      
+
       // 更新活动进度的宽度
       var greenWidth = x - rect.x;
       activeRect.attr("width", greenWidth);
@@ -227,7 +227,7 @@ rects.forEach(rect => {
       var pointer = d3.pointer(event, svg.node());
       var x = pointer[0];
       x = Math.max(rect.x, Math.min(rect.x + rect.width, x));
-    
+
       dragHandle.raise().attr("transform", "translate(" + (x - 6) + ", " + (rect.y + rect.height) + ")");
       activeRect.raise().attr("width", x - rect.x);
     }
@@ -260,7 +260,7 @@ rects.forEach(rect => {
       .call(d3.drag().on("drag", function(event) { dragLeftAnchor(event, rect); }));
   });
 
-  
+
 
 function dragStarted(event, d) {
   d3.select(this).raise().classed('active', true);
@@ -287,13 +287,13 @@ function dragged(event, d) {
   d3.select(this)
   .attr('x', d.x = event.x)
   .attr('y', d.y = event.y);
-  
-  
+
+
   // 更新与当前矩形关联的活动矩形和拖拽控制点的位置
   svg.select(`#rect1-right-${id}`)
     .attr('x', d.x)
     .attr('y', d.y);
-    
+
   svg.select(`#polygon-right-${id}`)
     .attr("transform", "translate(" + (d.x - 6) + ", " + (d.y + d.height - 5) + ")");
 
@@ -301,7 +301,7 @@ function dragged(event, d) {
   d3.select(`#right-anchor-${id}`).attr("x", d.x + d.width - 3).attr("y", d.y);
   d3.select(`#left-anchor-${id}`).attr("x", d.x - 3).attr("y", d.y);
 
-    
+
 
 
   // 更新关联曲线
@@ -347,7 +347,7 @@ function updateRelatedElements(rect) {
     .attr('y', rect.y)
     .attr('width', rect.width)
     .attr('height', rect.height);
-    
+
     d3.selectAll(`.circle-right-${id}`)
       .attr('cx', rect.x + rect.width+8) // 更新为矩形的右上角X坐标
       .attr('cy', rect.y + rect.height / 2); // 更新为矩形的中点Y坐标

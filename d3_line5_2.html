@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>D3.js Dragging Rectangles and Circles</title>
-  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="./lib/d3.v7.min.js"></script>
   <style>
     svg {
       border: 1px solid #ccc;
@@ -56,6 +56,7 @@
   let endHorizontalLength = 100; // 终点的水平长度
   // 假设我们有一个全局变量来存储路径与对象的关系
   let pathAssociations = {};
+  let relatedElements = {};
 
   const svg = d3.select('body').append('svg')
     .attr('width', 1000)
@@ -87,7 +88,7 @@
     .on('drag', dragged)
     .on('end', dragEnded));
 
-  
+
 
 
   // 绘制圆形
@@ -111,7 +112,7 @@
   }
 
   rects.forEach(rect => {
-    
+
     console.log("rect.id="+rect.id)
     let id = rect.id.replace("rect-","")
     // 初始化绿色圆角矩形（已完成部分）
@@ -135,13 +136,13 @@
       function dragMove(event, rect) {
         var pointer = d3.pointer(event, svg.node());
         var x = pointer[0];
-      
+
         // 限制拖动范围在矩形内
         x = Math.max(rect.x, Math.min(rect.x + rect.width, x));
-      
+
         // 更新三角形的位置
         dragHandle.attr("transform", "translate(" + (x - 6) + ", " + (rect.y + rect.height) + ")");
-        
+
         // 更新活动进度的宽度
         var greenWidth = x - rect.x;
         activeRect.attr("width", greenWidth);
@@ -149,7 +150,7 @@
         var pointer = d3.pointer(event, svg.node());
         var x = pointer[0];
         x = Math.max(rect.x, Math.min(rect.x + rect.width, x));
-      
+
         dragHandle.raise().attr("transform", "translate(" + (x - 6) + ", " + (rect.y + rect.height) + ")");
         activeRect.raise().attr("width", x - rect.x);
       }
@@ -182,7 +183,7 @@
         .call(d3.drag().on("drag", function(event) { dragLeftAnchor(event, rect); }));
     });
 
-    
+
 
   function dragStarted(event, d) {
     d3.select(this).raise().classed('active', true);
@@ -209,13 +210,13 @@
     d3.select(this)
     .attr('x', d.x = event.x)
     .attr('y', d.y = event.y);
-    
-    
+
+
     // 更新与当前矩形关联的活动矩形和拖拽控制点的位置
     svg.select(`#rect1-right-${id}`)
       .attr('x', d.x)
       .attr('y', d.y);
-      
+
     svg.select(`#polygon-right-${id}`)
       .attr("transform", "translate(" + (d.x - 6) + ", " + (d.y + d.height - 5) + ")");
 
@@ -223,7 +224,7 @@
     d3.select(`#right-anchor-${id}`).attr("x", d.x + d.width - 3).attr("y", d.y);
     d3.select(`#left-anchor-${id}`).attr("x", d.x - 3).attr("y", d.y);
 
-      
+
 
 
     // 更新关联曲线
@@ -240,7 +241,7 @@
 
   }
 
- 
+
   function dragRightAnchor(event, rect) {
       var newWidth = Math.max(10, event.x - rect.x);
       rect.width = newWidth;
@@ -269,7 +270,7 @@
       .attr('y', rect.y)
       .attr('width', rect.width)
       .attr('height', rect.height);
-      
+
       d3.selectAll(`.circle-right-${id}`)
         .attr('cx', rect.x + rect.width+8) // 更新为矩形的右上角X坐标
         .attr('cy', rect.y + rect.height / 2); // 更新为矩形的中点Y坐标
@@ -389,7 +390,18 @@
         let circleid = selectedElement.attr("id").replace("circle-right-","");
         let rectid = currentRect.attr("id").replace("rect-","");
         let pathid = "path-"+circleid+"-"+rectid;
+        if(circleid==rectid){
+          currentPath.attr('d', '');
+          currentPath = null;
+          return;
+        }
+        if(relatedElements[circleid+"-"+rectid]!=null){
+          currentPath.attr('d', '');
+          currentPath = null;
+          return;
+        }
         currentPath.attr("id",pathid);
+        relatedElements[circleid+"-"+rectid] = "1";
         createPath(pathid,{"id":circleid,"x":currentPath.attr("startX"),"y":currentPath.attr("startY")}, {"id":rectid,"x":currentPath.attr("endX"),"y":currentPath.attr("endY")});
       }
     }else{

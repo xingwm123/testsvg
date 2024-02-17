@@ -2,7 +2,8 @@
 <html>
 <head>
   <title>D3.js Drawing Line with Arrow and Deletion on Hover</title>
-  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="./lib/d3.v7.min.js"></script>
+  <script    src="lineDel.js"></script>
   <style>
     .clearInput {
       cursor: pointer;
@@ -18,8 +19,9 @@
     </marker>
   </defs>
 </svg>
-<svg role="graphics-symbol" id="delicon" viewBox="0 0 16 16" class="clearInput" style="width: 14px; height: 14px; display: none; fill: rgb(212, 76, 71); flex-shrink: 0; background: white; border-radius: 5px;"><path d="M7.993 15.528a7.273 7.273 0 01-2.923-.593A7.633 7.633 0 012.653 13.3a7.797 7.797 0 01-1.633-2.417 7.273 7.273 0 01-.593-2.922c0-1.035.198-2.01.593-2.922A7.758 7.758 0 015.063.99 7.273 7.273 0 017.985.395a7.29 7.29 0 012.93.593 7.733 7.733 0 012.417 1.64 7.647 7.647 0 011.64 2.41c.396.914.594 1.888.594 2.923 0 1.035-.198 2.01-.593 2.922a7.735 7.735 0 01-4.058 4.05 7.272 7.272 0 01-2.922.594zM5.59 11.06c.2 0 .371-.066.513-.198L8 8.951l1.904 1.911a.675.675 0 00.498.198.667.667 0 00.491-.198.67.67 0 00.205-.49.64.64 0 00-.205-.491L8.981 7.969l1.92-1.911a.686.686 0 00.204-.491.646.646 0 00-.205-.484.646.646 0 00-.483-.205.67.67 0 00-.49.205L8 6.995 6.081 5.083a.696.696 0 00-.49-.19.682.682 0 00-.491.198.651.651 0 00-.198.49c0 .181.068.342.205.484l1.912 1.904-1.912 1.92a.646.646 0 00-.205.483c0 .19.066.354.198.49.136.132.3.198.49.198z"></path></svg>
-<svg width="800" height="400" id="svg">
+<!--<svg role="graphics-symbol" id="delicon" viewBox="0 0 16 16" class="clearInput" style="width: 14px; height: 14px; display: none; fill: rgb(212, 76, 71); flex-shrink: 0; background: white; border-radius: 5px;">-->
+<!--  <path d="M7.993 15.528a7.273 7.273 0 01-2.923-.593A7.633 7.633 0 012.653 13.3a7.797 7.797 0 01-1.633-2.417 7.273 7.273 0 01-.593-2.922c0-1.035.198-2.01.593-2.922A7.758 7.758 0 015.063.99 7.273 7.273 0 017.985.395a7.29 7.29 0 012.93.593 7.733 7.733 0 012.417 1.64 7.647 7.647 0 011.64 2.41c.396.914.594 1.888.594 2.923 0 1.035-.198 2.01-.593 2.922a7.735 7.735 0 01-4.058 4.05 7.272 7.272 0 01-2.922.594zM5.59 11.06c.2 0 .371-.066.513-.198L8 8.951l1.904 1.911a.675.675 0 00.498.198.667.667 0 00.491-.198.67.67 0 00.205-.49.64.64 0 00-.205-.491L8.981 7.969l1.92-1.911a.686.686 0 00.204-.491.646.646 0 00-.205-.484.646.646 0 00-.483-.205.67.67 0 00-.49.205L8 6.995 6.081 5.083a.696.696 0 00-.49-.19.682.682 0 00-.491.198.651.651 0 00-.198.49c0 .181.068.342.205.484l1.912 1.904-1.912 1.92a.646.646 0 00-.205.483c0 .19.066.354.198.49.136.132.3.198.49.198z"></path></svg>-->
+<svg width="800" height="800" id="svg">
 </svg>
 
 <script>
@@ -27,8 +29,8 @@
   const svg = d3.select('#svg');
 
   // 假设lineX2和lineY2是线条终点的坐标
-  const lineX2 = 220;
-  const lineY2 = 150;
+  const lineX2 = 520;
+  const lineY2 = 350;
 
 
   // 添加线条
@@ -42,89 +44,21 @@
     .attr('marker-end', 'url(#arrow)')
     .classed('interactive-line', true);
 
+  const line2 = svg.append('line')
+    .attr('x1', 200)
+    .attr('y1', 200)
+    .attr('x2', 300)
+    .attr('y2', 400)
+    .attr('stroke', 'blue')
+    .attr('stroke-width', 2)
+    .attr('marker-end', 'url(#arrow)')
+    .classed('interactive-line', true);
+
+  // 添加删除图标
+  delLine(line, svg, lineX2, lineY2);
 
 
-  // 定义按钮的属性
-  const btnWidth = 28;
-  const btnHeight = 28;
-  const btnX = lineX2-5; // 假设您想将按钮放在某个特定的X坐标
-  const btnY = lineY2-10; // 假设您想将按钮放在某个特定的Y坐标
-
-  // 绘制红色矩形按钮
-  const button = svg.append('rect')
-    .attr('x', btnX)
-    .attr('y', btnY)
-    .attr('width', btnWidth)
-    .attr('height', btnHeight)
-    .attr('fill', 'red')
-    .attr("style","display:none")
-    .attr('rx', 4) // 为矩形添加圆角
-    .attr('ry', 4);
-
-  // 在按钮中绘制白色交叉线
-  const crossPadding = 3; // 交叉线与按钮边缘的内边距
-  const cross = svg.append('g'); // 创建一个用来包含两条线的组
-  cross.attr("style","display:none")
-  // 绘制交叉线的第一条线
-  cross.append('line')
-    .attr('x1', btnX + crossPadding)
-    .attr('y1', btnY + crossPadding)
-    .attr('x2', btnX + btnWidth - crossPadding)
-    .attr('y2', btnY + btnHeight - crossPadding)
-    .attr('stroke', 'white')
-    .attr('stroke-width', 2);
-
-  // 绘制交叉线的第二条线
-  cross.append('line')
-    .attr('x1', btnX + crossPadding)
-    .attr('y1', btnY + btnHeight - crossPadding)
-    .attr('x2', btnX + btnWidth - crossPadding)
-    .attr('y2', btnY + crossPadding)
-    .attr('stroke', 'white')
-    .attr('stroke-width', 2);
-
-  line.on('mouseover', function() {
-    // 显示删除图标前，确保它在SVG中的顺序最后，以显示在最上层
-
-    button.style('display', 'block');
-    cross.style("display","block")
-  }).on('mouseout', function() {
-    button.style('display', 'none');
-    cross.style('display', 'none');
-  });
-
-  // 计算删除图标和热区矩形的位置
-  const rectX = lineX2 - 8; // 微调以对齐矩形中心到线条末端
-  const rectY = lineY2 - 8;
-  const rectWidth = 20; // 矩形宽度
-  const rectHeight = 20; // 矩形高度
-  // 添加透明热区矩形
-  const hotRect = svg.append('rect')
-    .attr('x', rectX)
-    .attr('y', rectY)
-    .attr('width', rectWidth)
-    .attr('height', rectHeight)
-    .style('fill', 'rgba(0,0,0,0)') // 透明填充
-    .classed('hot-area', true);
-
-
-  // 当鼠标悬停在热区矩形上时显示删除图标
-  hotRect.on('mouseover', function() {
-    button.style('display', 'block');
-    cross.style("display","block")
-  }).on('mouseout', function() {
-    button.style('display', 'none');
-    cross.style('display', 'none');
-  });
-
-  // 点击图标删除线
-  hotRect.on('click', function() {
-    line.remove(); // 删除线条
-    hotRect.remove();
-    button.remove(); // 删除按钮
-    cross.remove();
-    d3.select(this).remove(); // 删除图标
-  });
+  delLine(line2, svg, 300, 400);
 
 </script>
 

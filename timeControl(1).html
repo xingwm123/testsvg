@@ -100,9 +100,6 @@
         // ... 你的天视图逻辑 ...
         break;
       case 'week':
-        svg.selectAll('*').remove();
-        svg.selectAll('g.axis').remove(); // 移除已有的坐标轴
-        svg.selectAll('.year-month-label').remove(); // 移除已有的年月标签
         // 定义两周时间段的开始和结束日期
         startDate = new Date(2024, 0, 26); // 月份是从0开始的，0代表一月
         endDate = new Date(2024, 1, 9); // 结束日期设置为两周后
@@ -142,10 +139,6 @@
         // 移除旧的轴和标签
         svg.selectAll('g.axis').remove();
         svg.selectAll('.month-label').remove();
-
-        svg.selectAll('*').remove();
-        svg.selectAll('g.axis').remove(); // 移除已有的坐标轴
-        svg.selectAll('.year-month-label').remove(); // 移除已有的年月标签
 
         // 绘制新的轴
         const gX = svg.append('g')
@@ -192,12 +185,8 @@
           weekdrawAxis();
           container.scrollLeft += 100;
         });
-        weekdrawAxis();
         break;
       case 'month':
-        svg.selectAll('*').remove();
-        svg.selectAll('g.axis').remove(); // 移除已有的坐标轴
-        svg.selectAll('.year-month-label').remove(); // 移除已有的年月标签
         // 定义40天时间段的开始和结束日期
         startDate = new Date();
         startDate.setDate(startDate.getDate() - startDate.getDay()); // 移到当前周的周日
@@ -239,35 +228,29 @@
         svg.selectAll('g.axis').remove();
         svg.selectAll('.month-label').remove();
 
-        svg.selectAll('*').remove();
-        svg.selectAll('g.axis').remove(); // 移除已有的坐标轴
-        svg.selectAll('.year-month-label').remove(); // 移除已有的年月标签
+        // 更新x轴比例尺的域
+        xScale.domain([startDate, endDate]);
 
-        // Adjusted margin top to create space for month labels
-        const axisTopMargin = margin.top + 20; // Add more space for month labels above the axis
-
-        // Create new axis
+        // 绘制新的轴
         const gX = svg.append('g')
           .attr('class', 'axis')
-          .attr('transform', `translate(${margin.left},${axisTopMargin})`)
+          .attr('transform', `translate(${margin.left},${margin.top + 40})`)
           .call(xAxis);
 
-        // Set the color for weekend text labels
+        // 设置周末日期的文本颜色
         gX.selectAll('.tick text')
-          .style('fill', function(d) {
-            return (d.getDay() === 0 || d.getDay() === 6) ? 'lightgrey' : 'black';
-          });
+          .classed('weekend-text', d => d.getDay() === 0 || d.getDay() === 6);
 
-        // Add new month labels above the axis line
-        xScale.ticks(d3.timeMonth.every(1)).forEach(function(month) {
+        // 重新绘制月份标签
+        months = xScale.ticks(d3.timeMonth.every(1));
+        months.forEach(function(month) {
           svg.append('text')
             .attr('class', 'month-label')
             .attr('x', xScale(month))
-            .attr('y', margin.top - 10) // Adjust this value to move label above the axis
+            .attr('y', margin.top ) // 确保这个值将标签放在视图内
             .text(d3.timeFormat('%Y年%m月')(month));
         });
       }
-
 
         document.getElementById('today-button').addEventListener('click', function() {
           const today = new Date();
@@ -290,13 +273,8 @@
           monthdrawAxis();
           container.scrollLeft += 100;
         });
-        monthdrawAxis();
         break;
       case 'quarter':
-        svg.selectAll('*').remove();
-        svg.selectAll('g.axis').remove(); // 移除已有的坐标轴
-        svg.selectAll('.year-month-label').remove(); // 移除已有的年月标签
-
         // 设置开始和结束日期以覆盖半年的时间
         today = new Date();
         startDate = new Date(today.getFullYear(), today.getMonth() - 6, 1); // 半年前的第一天
@@ -308,14 +286,9 @@
           .range([0, width]);
 
         // 绘制坐标轴
-      function quarterdrawAxis() {
-
-        svg.selectAll('*').remove();
+      function drawAxis() {
         svg.selectAll('g.axis').remove(); // 移除已有的坐标轴
         svg.selectAll('.year-month-label').remove(); // 移除已有的年月标签
-        // 移除旧的轴和标签
-        svg.selectAll('g.axis').remove();
-        svg.selectAll('.month-label').remove();
 
         // 计算每7天一个刻度的值
         const everySevenDays = d3.utcDay.range(startDate, d3.utcDay.offset(endDate, 1)).filter(function(d) {
@@ -346,7 +319,7 @@
         });
       }
 
-        quarterdrawAxis();
+        drawAxis();
         container.scrollLeft = xScale(today) - container.offsetWidth / 2; // 滚动到今天
 
         document.getElementById('today-button').addEventListener('click', function () {
@@ -357,7 +330,7 @@
           startDate.setDate(startDate.getDate() - 90); // 向左滚动一天
           endDate.setDate(endDate.getDate() - 90);
           xScale.domain([startDate, endDate]);
-          quarterdrawAxis();
+          drawAxis();
           container.scrollLeft -= 100;
         });
 
@@ -365,26 +338,20 @@
           startDate.setDate(startDate.getDate() + 90); // 向右滚动一天
           endDate.setDate(endDate.getDate() + 90);
           xScale.domain([startDate, endDate]);
-          quarterdrawAxis();
+          drawAxis();
           container.scrollLeft += 100;
         });
-        quarterdrawAxis();
         break;
     }
   }
 
   // 绑定下拉框事件
   document.getElementById('timeframe-select').addEventListener('change', function() {
-    svg.selectAll('*').remove();
-    svg.selectAll('g.axis').remove(); // 移除已有的坐标轴
-    svg.selectAll('.year-month-label').remove(); // 移除已有的年月标签
     updateChart(this.value);
   });
 
-  // 页面加载后初始化图表
-  document.addEventListener("DOMContentLoaded", function() {
-    updateChart('day'); // 根据需要调整初始视图
-  });
+  // 初始加载时更新图表
+  updateChart('day');
 </script>
 
 </body>

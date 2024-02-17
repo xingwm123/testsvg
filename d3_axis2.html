@@ -8,10 +8,36 @@
     svg {
       border: 1px solid #ccc;
     }
+    .drag-handle {
+      fill: #ccc; /* 三角形的填充颜色 */
+      cursor: pointer;
+      stroke: #999; /* 三角形的边框颜色 */
+      stroke-width: 2; /* 三角形的边框宽度 */
+    }
+    .active-rect {
+      fill: lightgreen; /* 活动进度的颜色 */
+      cursor: pointer;
+      rx: 10; /* 矩形的圆角 */
+      ry: 10;
+    }
   </style>
 </head>
 <body>
-<svg width="960" height="800"></svg>
+<table style="position: absolute; left: 300px;top: 50px;" width="200" border="1">
+  <tr height="70px"><td>姓名</td><td>积分</td><td>年龄</td></tr>
+  <tr height="40px"><td>张山</td><td>2222</td><td>2222</td></tr>
+  <tr height="40px"><td>李四</td><td>2222</td><td>2222</td></tr>
+  <tr height="40px"><td>王五</td><td>2222</td><td>2222</td></tr>
+</table>
+<svg width="960" height="800" style="position: absolute; left: 500px;top: 50px;></svg>
+
+<svg width="1" height="1">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="0" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="blue"></path>
+    </marker>
+  </defs>
+</svg>
 <script>
   let startDate = new Date(new Date().getTime() - 10 * 24 * 60 * 60 * 1000); // 开始日期
   let endDate = new Date(startDate.getTime() + 30 * 24 * 60 * 60 * 1000); // 结束日期，40天后
@@ -97,14 +123,20 @@
   const currentDate = new Date(); // 获取当前日期
   const currentXPosition = scaleTime(currentDate); // 使用时间尺度计算当前日期对应的x坐标
 
-  // 在SVG中添加红线
-  svg.append('line') // 添加一个新的line元素
-    .attr('x1', currentXPosition) // x1和x2设置为计算出的x坐标，这将创建一个垂直线
-    .attr('x2', currentXPosition)
-    .attr('y1', 40) // y1设置为0（或者SVG顶部边缘的位置）
-    .attr('y2', 800) // y2设置为SVG的高度，或者你希望线结束的位置
-    .attr('stroke', 'red') // 设置线条颜色为红色
-    .attr('stroke-width', 2); // 设置线条宽度
+  /////////////////////
+
+  const rects = [
+    { id: "rect-1", x: 100, y: 150, width: 100, height: 100, fill: 'green', stroke: 'black' },
+    { id: "rect-2", x: 200, y: 350, width: 100, height: 100, fill: 'green', stroke: 'black' },
+    { id: "rect-3", x: 300, y: 450, width: 100, height: 100, fill: 'green', stroke: 'black' },
+    { id: "rect-4", x: 400, y: 550, width: 100, height: 100, fill: 'green', stroke: 'black' },
+    { id: "rect-5", x: 500, y: 650, width: 100, height: 100, fill: 'green', stroke: 'black' },
+    { id: "rect-6", x: 600, y: 750, width: 100, height: 100, fill: 'green', stroke: 'black' },
+    { id: "rect-7", x: 700, y: 850, width: 100, height: 100, fill: 'green', stroke: 'black' },
+    { id: "rect-8", x: 800, y: 950, width: 100, height: 100, fill: 'green', stroke: 'black' }
+
+  ];
+
 
 
 
@@ -134,24 +166,6 @@
 
 
 
-
-  // 调整y轴比例尺的range
-  const yScale = d3.scaleLinear()
-    .domain([0, 9]) // 假设有10个刻度
-    .range([height, 0]); // 从x轴底部向上
-
-  // 创建Y轴
-  const yAxis = d3.axisLeft(yScale)
-    .tickFormat((d, i) => names[i])
-    .ticks(10);
-
-  const xAxisBottomPosition = 66; // 例如，这是日期时间轴的垂直位置
-
-  // 调整y轴的transform属性，使其最上方与x轴底部的最左侧对齐
-  svg.append("g")
-    .attr("class", "y axis")
-    .attr("transform", `translate(${margin.left},${xAxisBottomPosition})`)
-    .call(yAxis);
 
 </script>
 

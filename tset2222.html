@@ -12,7 +12,7 @@ cursor: pointer;
 </head>
 <body>
 <svg width="800" height="600" style="border: 1px solid black;"></svg>
-<script src="https://d3js.org/d3.v7.min.js"></script>
+<script src="./lib/d3.v7.min.js"></script>
 <script>
 var svg = d3.select("svg");
 var rectWidth = 300;
@@ -51,7 +51,7 @@ function dragMove(event) {
 
   // 更新三角形的位置
   dragHandle.attr("transform", "translate(" + x + ", 180)");
-  
+
   var greenWidth = x - 100;
   greenRect.attr("width", greenWidth);
   blueRect.attr("x", 100 + greenWidth)

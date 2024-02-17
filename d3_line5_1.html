@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>D3.js Dragging Rectangles and Circles</title>
-  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="./lib/d3.v7.min.js"></script>
   <style>
     svg {
       border: 1px solid #ccc;
@@ -87,7 +87,7 @@
     .on('drag', dragged)
     .on('end', dragEnded));
 
-  
+
 
 
   // 绘制圆形
@@ -111,7 +111,7 @@
   }
 
   rects.forEach(rect => {
-    
+
     console.log("rect.id="+rect.id)
     let id = rect.id.replace("rect-","")
     // 初始化绿色圆角矩形（已完成部分）
@@ -135,13 +135,13 @@
       function dragMove(event, rect) {
         var pointer = d3.pointer(event, svg.node());
         var x = pointer[0];
-      
+
         // 限制拖动范围在矩形内
         x = Math.max(rect.x, Math.min(rect.x + rect.width, x));
-      
+
         // 更新三角形的位置
         dragHandle.attr("transform", "translate(" + (x - 6) + ", " + (rect.y + rect.height) + ")");
-        
+
         // 更新活动进度的宽度
         var greenWidth = x - rect.x;
         activeRect.attr("width", greenWidth);
@@ -149,7 +149,7 @@
         var pointer = d3.pointer(event, svg.node());
         var x = pointer[0];
         x = Math.max(rect.x, Math.min(rect.x + rect.width, x));
-      
+
         dragHandle.raise().attr("transform", "translate(" + (x - 6) + ", " + (rect.y + rect.height) + ")");
         activeRect.raise().attr("width", x - rect.x);
       }
@@ -181,17 +181,17 @@
     d3.select(this)
     .attr('x', d.x = event.x)
     .attr('y', d.y = event.y);
-    
-    
+
+
     // 更新与当前矩形关联的活动矩形和拖拽控制点的位置
     svg.select(`#rect1-right-${id}`)
       .attr('x', d.x)
       .attr('y', d.y);
-      
+
     svg.select(`#polygon-right-${id}`)
       .attr("transform", "translate(" + (d.x - 6) + ", " + (d.y + d.height - 5) + ")");
 
-      
+
 
 
     // 更新关联曲线

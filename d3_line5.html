@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>D3.js Dragging Rectangles and Circles</title>
-  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="./lib/d3.v7.min.js"></script>
   <style>
     svg {
       border: 1px solid #ccc;
@@ -77,12 +77,29 @@
   function drawCircles(rect) {
     let id = rect.id.replace("rect-","")
     // // 右侧圆形（位于右侧中点）
+    svg.append('rect')
+      .attr('id',`rect-right-${id}`)
+      .attr('x', rect.x+rect.width) // 设置为矩形的右上角X坐标
+      .attr('y', rect.y+rect.height/2-20) // 设置为矩形的中点Y坐标
+      .attr('width', 50)
+      .attr('height', 50)
+      .style("fill", "transparent")
+      // .style("display", "none")
+      // .attr('fill', 'red')
+      // .call(d3.drag()
+      .on('mouseover', mouseover_rectright) // 定义开始拖拽的行为
+      .on('mouseout', mouseout_rectright)
+      .on('end', dragEnded_cycle);
     svg.append('circle')
       .attr('id',`circle-right-${id}`)
       .attr('class', `circle circle-right-${id}`)
       .attr('cx', rect.x + rect.width+5) // 设置为矩形的右上角X坐标
       .attr('cy', rect.y + rect.height / 2) // 设置为矩形的中点Y坐标
       .attr('r', 5)
+      .on('mouseover', mouseover_rectright) // 定义开始拖拽的行为
+      .on('mouseout', mouseout_rectright)
+      .attr("style","display:none")
+      // .attr("style","display:none")
       .attr('fill', 'red').call(d3.drag()
       .on('start', dragStarted_cycle) // 定义开始拖拽的行为
       .on('drag', dragged_cycle)
@@ -109,6 +126,10 @@
       .attr('cx', d.x + d.width+5) // 更新为矩形的右上角X坐标
       .attr('cy', d.y + d.height / 2); // 更新为矩形的中点Y坐标
 
+    // rect = d3.select(this);
+    svg.selectAll(`#rect-right-${id}`)
+      .attr('x', d.x+d.width) // 设置为矩形的右上角X坐标
+      .attr('y', d.y+d.height/2-20) // 设置为矩形的中点Y坐标
 
     // 更新关联曲线
     //1. 找到相关的圆形，然后再根据圆形id，找到所有从这里出去的线。 也就是说，一个圆形，可能有多条线
@@ -140,6 +161,18 @@
       .style('fill', 'none')
       .style('stroke', 'blue')
       .attr('d', '');
+  }
+
+  function mouseover_rectright(event){
+    let id = event.currentTarget.id.replace("rect-right-","").replace("circle-right-","")
+    svg.selectAll(`#circle-right-${id}`).attr('style', 'display:block');
+    // d3.select(this).attr('style', 'display:block');
+  }
+
+  function mouseout_rectright(event){
+    let id = event.currentTarget.id.replace("rect-right-","").replace("circle-right-","")
+    svg.selectAll(`#circle-right-${id}`).attr('style', 'display:none');
+    // d3.select(this).attr('style', 'display:none');
   }
 
   function dragged_cycle(event,circle) {

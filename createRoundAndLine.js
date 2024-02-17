@@ -1,12 +1,14 @@
 
 import { sharedState } from './common.js';
 
+import delLineEvent from './lineDel.js';
+
 
 
 // Description: 用于创建圆形
 export function createRoundAndLine(svg, rects) {
 
-  
+
 
   let currentRect = null;
   let currentPath = null;
@@ -148,6 +150,8 @@ export function createRoundAndLine(svg, rects) {
       .attr("endY",endY);
       sharedState.setPaths(currentPath);
 
+    //
+
 
 
   }
@@ -177,8 +181,21 @@ export function createRoundAndLine(svg, rects) {
         let circleid = selectedElement.attr("id").replace("circle-right-","");
         let rectid = currentRect.attr("id").replace("rect-","");
         let pathid = "path-"+circleid+"-"+rectid;
+
+        if(circleid==rectid){
+          currentPath.attr('d', '');
+          currentPath = null;
+          return;
+        }
+        if(sharedState.getRelatedElements(circleid+"-"+rectid)!=null){
+          currentPath.attr('d', '');
+          currentPath = null;
+          return;
+        }
+        sharedState.setRelatedElements(circleid+"-"+rectid,"1");
         currentPath.attr("id",pathid);
         createPath(pathid,{"id":circleid,"x":currentPath.attr("startX"),"y":currentPath.attr("startY")}, {"id":rectid,"x":currentPath.attr("endX"),"y":currentPath.attr("endY")});
+        delLineEvent(currentPath,svg,currentPath.attr("endX"),currentPath.attr("endY"))
       }
     }else{
       currentPath.attr('d', '');
@@ -196,7 +213,8 @@ export function createRoundAndLine(svg, rects) {
       start: startObject, // 起始对象的引用或标识符
       end: endObject // 终点对象的引用或标识符
     });
-  
+
   }
 
 }
+

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>动态时间轴视图</title>
-  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="./lib/d3.v7.min.js"></script>
   <style>
     .axis path,
     .axis line {
@@ -80,7 +80,7 @@
   </select>
 </div>
 
-<script type="module"> 
+<script type="module">
   import { sharedState } from './common.js';
   const svg = d3.select('svg');
   const margin = { top: 20, right: 20, bottom: 30, left: 20 };

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    .container {
+      position: relative; /* 这使得它可以成为.box2的定位上下文 */
+      width: 200px;
+      height: 200px;
+      background-color: lightgrey; /* 方便看到布局 */
+    }
+
+    .box1 {
+      position: relative; /* 相对于它自身的初始位置移动 */
+      top: 10px;
+      left: 20px;
+      width: 50px;
+      height: 50px;
+      background-color: red;
+    }
+
+    .box2 {
+      position: absolute; /* 相对于最近的定位祖先元素（.container）进行定位 */
+      top: 0;
+      left: 0;
+      width: 50px;
+      height: 50px;
+      background-color: blue;
+    }
+
+  </style>
+</head>
+<body>
+ddddd
+<div>kkkk</div>
+3333<div class="container">
+  444<div class="box1">Box 1</div>
+  555<div class="box2">Box 2</div>
+</div>
+<image src="position.jpg"></image>
+
+</body>
+</html>
